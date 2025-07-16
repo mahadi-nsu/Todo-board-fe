@@ -1,5 +1,6 @@
 import React from "react";
 import { Form, Input, Button, Card } from "antd";
+import todoPng from "@/assets/to-do.png";
 
 interface LoginFormValues {
   email: string;
@@ -14,6 +15,11 @@ const Login = () => {
   return (
     <div className="flex justify-center items-center min-h-screen w-screen overflow-hidden">
       <Card className="w-full max-w-md" bordered>
+        <img
+          src={todoPng}
+          alt="Todo"
+          className="mx-auto mb-4 w-20 h-20 object-contain"
+        />
         <h2 className="text-xl font-semibold text-center mb-6">Login</h2>
         <Form
           name="login"
