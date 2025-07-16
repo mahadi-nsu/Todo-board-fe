@@ -1,6 +1,7 @@
 import React from "react";
 import { Form, Input, Button, Card } from "antd";
 import todoPng from "@/assets/to-do.png";
+import { emailRules, passwordRules } from "../utils/validationRules";
 
 interface LoginFormValues {
   email: string;
@@ -13,7 +14,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen w-screen overflow-hidden">
+    <div className="flex justify-center items-center min-h-screen w-screen overflow-hidden -mt-12">
       <Card className="w-full max-w-md" bordered>
         <img
           src={todoPng}
@@ -32,10 +33,7 @@ const Login = () => {
             label="Email"
             name="email"
             required={false}
-            rules={[
-              { required: true, message: "Please input your email!" },
-              { type: "email", message: "Please enter a valid email!" },
-            ]}
+            rules={emailRules}
             style={{
               marginBottom: "12px",
             }}
@@ -43,11 +41,7 @@ const Login = () => {
             <Input placeholder="Enter your email" />
           </Form.Item>
 
-          <Form.Item
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: "Please input your password!" }]}
-          >
+          <Form.Item label="Password" name="password" rules={passwordRules}>
             <Input.Password placeholder="Enter your password" />
           </Form.Item>
 
