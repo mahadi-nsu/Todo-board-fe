@@ -2,14 +2,10 @@ import React from "react";
 import { Form, Button, Card, Input } from "antd";
 import { emailRules, passwordRules } from "../utils/validationRules";
 import AuthBanner from "@/components/common/AuthBanner";
-
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
+import type { ILoginFormValues } from "../types";
 
 const Login = () => {
-  const onFinish = (values: LoginFormValues) => {
+  const onFinish = (values: ILoginFormValues) => {
     console.log("Success:", values);
   };
 
