@@ -1,4 +1,5 @@
 import { Form, Button, Card, Input } from "antd";
+import { Link } from "react-router-dom";
 import {
   emailRules,
   passwordRules,
@@ -74,10 +75,10 @@ const Register = () => {
         </Form>
         <hr className="border-t border-dotted border-neutral-400 my-4" />
         <div className="text-center mt-2">
-          <a href="#" className="text-blue-600 hover:underline">
+          <Link to="/" className="text-blue-600 hover:underline">
             Already have an account?{" "}
             <span className="font-semibold">Go to login</span>
-          </a>
+          </Link>
         </div>
       </Card>
     </div>

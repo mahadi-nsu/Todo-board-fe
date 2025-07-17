@@ -1,4 +1,6 @@
+import React from "react";
 import { Form, Button, Card, Input } from "antd";
+import { Link } from "react-router-dom";
 import { emailRules, passwordRules } from "../utils/validationRules";
 import AuthBanner from "@/components/common/AuthBanner";
 import type { ILoginFormValues } from "../types";
@@ -45,10 +47,10 @@ const Login = () => {
           <hr className="border-t border-dotted border-neutral-400 my-4" />
         </Form>
         <div className="text-center mt-2">
-          <a href="#" className="text-blue-600 hover:underline">
+          <Link to="/register" className="text-blue-600 hover:underline">
             Don't registered yet?{" "}
             <span className="font-semibold">Go to register</span>
-          </a>
+          </Link>
         </div>
       </Card>
     </div>
