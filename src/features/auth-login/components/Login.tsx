@@ -1,4 +1,3 @@
-import React from "react";
 import { Form, Button, Card, Input } from "antd";
 import { emailRules, passwordRules } from "../utils/validationRules";
 import AuthBanner from "@/components/common/AuthBanner";
