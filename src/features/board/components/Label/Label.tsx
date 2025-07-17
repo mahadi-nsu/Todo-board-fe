@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Card, Button, Space, Badge, Dropdown } from "antd";
 import { MoreOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import LabelTitle from "./LabelTitle";
+import Ticket from "../Ticket/Ticket";
+import type { TicketData } from "../Ticket/Ticket";
 
 interface LabelProps {
   label: { guid: string; title: string };
@@ -11,10 +13,19 @@ interface LabelProps {
 const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
   const [isAddTicketVisible, setIsAddTicketVisible] = useState(false);
   // Dummy tickets for design
-  // FIXME: will remove with api data
-  const tickets = [
-    { guid: "t1", title: "Sample Ticket 1" },
-    { guid: "t2", title: "Sample Ticket 2" },
+  const tickets: TicketData[] = [
+    {
+      guid: "t1",
+      title: "Sample Ticket 1",
+      description: "This is a sample ticket description for design purposes.",
+      tags: ["Expires today", "frontend", "high"],
+    },
+    {
+      guid: "t2",
+      title: "Sample Ticket 2",
+      description: "Another ticket with a different description.",
+      tags: ["backend", "low"],
+    },
   ];
 
   const menuItems = [
@@ -54,18 +65,17 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
       </div>
 
       {/* Tickets List */}
-      <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+      <div
+        className="flex-1 overflow-y-auto mb-4"
+        style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+      >
         {tickets.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
             <div className="mb-2">No tickets</div>
             <div className="text-sm">Drop tickets here or add new ones</div>
           </div>
         ) : (
-          tickets.map((ticket) => (
-            <div key={ticket.guid} className="bg-white rounded shadow p-2">
-              {ticket.title}
-            </div>
-          ))
+          tickets.map((ticket) => <Ticket key={ticket.guid} ticket={ticket} />)
         )}
       </div>
 
