@@ -4,6 +4,7 @@ import { MoreOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import LabelTitle from "./LabelTitle";
 import Ticket from "../Ticket/Ticket";
 import type { TicketData } from "../Ticket/Ticket";
+import AddNewTicket from "../Ticket/AddNewTicket";
 
 interface LabelProps {
   label: { guid: string; title: string };
@@ -91,6 +92,14 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
           Add Ticket
         </Button>
       </div>
+
+      {/* Add New Ticket Modal */}
+      <AddNewTicket
+        visible={isAddTicketVisible}
+        labelTitle={label.title}
+        onSuccess={() => setIsAddTicketVisible(false)}
+        onCancel={() => setIsAddTicketVisible(false)}
+      />
     </Card>
   );
 };
