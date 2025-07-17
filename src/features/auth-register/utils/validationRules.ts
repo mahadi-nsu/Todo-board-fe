@@ -2,7 +2,7 @@ import type { Rule } from "antd/es/form";
 import {
   emailRules,
   passwordRules,
-} from "../../auth-login/utils/validationRules";
+} from "@/features/auth-login/utils/validationRules";
 
 export const nameRules: Rule[] = [
   { required: true, message: "Please input your name!" },
