@@ -11,28 +11,37 @@ export interface RegisterRequest {
   password: string;
 }
 
-export interface AuthResponse {
+export interface LoginResponse {
   user: {
     id: number;
-    title: string;
+    name: string;
+    email: string;
     createdAt: string;
     updatedAt: string;
   };
   accessToken: string;
 }
 
+export interface RegisterResponse {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation<AuthResponse, LoginRequest>({
+    login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
         url: "/authentication",
         method: "POST",
         body: credentials,
       }),
     }),
-    register: builder.mutation<AuthResponse, RegisterRequest>({
+    register: builder.mutation<RegisterResponse, RegisterRequest>({
       query: (userData) => ({
-        url: "/auth/register",
+        url: "/users/registration",
         method: "POST",
         body: userData,
       }),
@@ -43,7 +52,7 @@ export const authApi = api.injectEndpoints({
         method: "POST",
       }),
     }),
-    getCurrentUser: builder.query<AuthResponse["user"], void>({
+    getCurrentUser: builder.query<LoginResponse["user"], void>({
       query: () => "/auth/me",
     }),
   }),

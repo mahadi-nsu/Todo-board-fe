@@ -1,5 +1,5 @@
-import { Form, Button, Card, Input } from "antd";
-import { Link } from "react-router-dom";
+import { Form, Button, Card, Input, message } from "antd";
+import { Link, useNavigate } from "react-router-dom";
 import {
   emailRules,
   passwordRules,
@@ -8,11 +8,45 @@ import {
 } from "../utils/validationRules";
 import AuthBanner from "@/components/common/AuthBanner";
 import PageTransition from "@/components/common/PageTransition";
+import {
+  useRegisterMutation,
+  useLoginMutation,
+} from "@/store/services/authApi";
 import type { IRegisterFormValues } from "../types";
 
 const Register = () => {
-  const onFinish = (values: IRegisterFormValues) => {
-    console.log("Success:", values);
+  const navigate = useNavigate();
+  const [register, { isLoading: isRegistering }] = useRegisterMutation();
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+
+  const onFinish = async (values: IRegisterFormValues) => {
+    try {
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...registerData } = values;
+
+      // Register the user
+      await register(registerData).unwrap();
+      message.success("Registration successful!");
+
+      // Automatically log in the user
+      const loginResult = await login({
+        email: registerData.email,
+        password: registerData.password,
+      }).unwrap();
+
+      // Save token to localStorage
+      localStorage.setItem("accessToken", loginResult.accessToken);
+
+      // Navigate to board
+      navigate("/board");
+    } catch (error) {
+      const errorMessage =
+        (error as any)?.data?.message ||
+        (error as any)?.message ||
+        "Registration failed. Please try again.";
+
+      message.error(errorMessage);
+    }
   };
 
   return (
@@ -70,8 +104,13 @@ const Register = () => {
             </Form.Item>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Register
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={isRegistering || isLoggingIn}
+              >
+                {isRegistering || isLoggingIn ? "Processing..." : "Register"}
               </Button>
             </Form.Item>
           </Form>
