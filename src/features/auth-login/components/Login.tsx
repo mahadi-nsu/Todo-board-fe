@@ -1,13 +1,35 @@
-import { Form, Button, Card, Input } from "antd";
-import { Link } from "react-router-dom";
+import { Form, Button, Card, Input, message } from "antd";
+import { Link, useNavigate } from "react-router-dom";
 import { emailRules, passwordRules } from "../utils/validationRules";
 import AuthBanner from "@/components/common/AuthBanner";
 import PageTransition from "@/components/common/PageTransition";
+import { useLoginMutation } from "@/store/services/authApi";
 import type { ILoginFormValues } from "../types";
 
 const Login = () => {
-  const onFinish = (values: ILoginFormValues) => {
-    console.log("Success:", values);
+  const navigate = useNavigate();
+  const [login, { isLoading }] = useLoginMutation();
+
+  const onFinish = async (values: ILoginFormValues) => {
+    try {
+      const result = await login(values).unwrap();
+
+      // Save token to localStorage
+      localStorage.setItem("accessToken", result.accessToken);
+
+      // Show success message
+      message.success("Login successful!");
+
+      // Navigate to board
+      navigate("/board");
+    } catch (error) {
+      const errorMessage =
+        (error as any)?.data?.message ||
+        (error as any)?.message ||
+        "Login failed. Please try again.";
+
+      message.error(errorMessage);
+    }
   };
 
   return (
@@ -39,8 +61,13 @@ const Login = () => {
             </Form.Item>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Login
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={isLoading}
+              >
+                {isLoading ? "Logging in..." : "Login"}
               </Button>
             </Form.Item>
           </Form>

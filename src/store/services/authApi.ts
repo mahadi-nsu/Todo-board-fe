@@ -13,18 +13,19 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   user: {
-    id: string;
-    name: string;
-    email: string;
+    id: number;
+    title: string;
+    createdAt: string;
+    updatedAt: string;
   };
-  token: string;
+  accessToken: string;
 }
 
 export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
-        url: "/auth/login",
+        url: "/authentication",
         method: "POST",
         body: credentials,
       }),
