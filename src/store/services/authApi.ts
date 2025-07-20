@@ -52,8 +52,8 @@ export const authApi = api.injectEndpoints({
         method: "POST",
       }),
     }),
-    getCurrentUser: builder.query<LoginResponse["user"], void>({
-      query: () => "/auth/me",
+    getCurrentUser: builder.query<RegisterResponse, void>({
+      query: () => "/users/me",
     }),
   }),
 });

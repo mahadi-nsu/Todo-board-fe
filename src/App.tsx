@@ -4,6 +4,9 @@ import Register from "./features/auth-register";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import TodoBoard from "./features/board";
+import ProtectedRoute from "./components/common/ProtectedRoute";
+import Layout from "./components/common/Layout";
+import AuthRedirect from "./components/common/AuthRedirect";
 
 function App() {
   return (
@@ -11,9 +14,32 @@ function App() {
       <BrowserRouter>
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/board" element={<TodoBoard />} />
+            <Route
+              path="/"
+              element={
+                <AuthRedirect>
+                  <Login />
+                </AuthRedirect>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <AuthRedirect>
+                  <Register />
+                </AuthRedirect>
+              }
+            />
+            <Route
+              path="/board"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TodoBoard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </AnimatePresence>
       </BrowserRouter>
