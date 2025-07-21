@@ -4,10 +4,12 @@ import dayjs from "dayjs";
 import {
   useGetTicketsQuery,
   useGetTicketQuery,
+  useGetTicketHistoryQuery,
   useCreateTicketMutation,
   useUpdateTicketMutation,
   useDeleteTicketMutation,
   useAddLabelToTicketMutation,
+  useRemoveLabelFromTicketMutation,
 } from "@/store/services/ticketApi";
 import { useGetCategoriesQuery } from "@/store/services/categoryApi";
 import { useGetLabelsQuery } from "@/store/services/labelApi";
@@ -16,11 +18,15 @@ const TicketTest: React.FC = () => {
   const { data: tickets, error, isLoading } = useGetTicketsQuery();
   const { data: categories } = useGetCategoriesQuery();
   const { data: labels } = useGetLabelsQuery();
+  const { data: ticketHistory, isLoading: isLoadingHistory } =
+    useGetTicketHistoryQuery();
   const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
   const [addLabelToTicket, { isLoading: isAddingLabel }] =
     useAddLabelToTicketMutation();
+  const [removeLabelFromTicket, { isLoading: isRemovingLabel }] =
+    useRemoveLabelFromTicketMutation();
 
   const [newTicket, setNewTicket] = React.useState({
     title: "",
@@ -119,6 +125,18 @@ const TicketTest: React.FC = () => {
       message.success("Label added to ticket successfully!");
     } catch (error) {
       message.error("Failed to add label to ticket");
+    }
+  };
+
+  const handleRemoveLabelFromTicket = async (
+    ticketId: number,
+    labelId: number
+  ) => {
+    try {
+      await removeLabelFromTicket({ ticketId, labelId }).unwrap();
+      message.success("Label removed from ticket successfully!");
+    } catch (error) {
+      message.error("Failed to remove label from ticket");
     }
   };
 
@@ -329,6 +347,33 @@ const TicketTest: React.FC = () => {
       )}
 
       <div>
+        <h4>Ticket History ({ticketHistory?.length || 0}):</h4>
+        {isLoadingHistory ? (
+          <p>Loading ticket history...</p>
+        ) : (
+          <ul>
+            {ticketHistory?.map((ticket) => (
+              <li key={ticket.id} style={{ marginBottom: "8px" }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <span>
+                    {ticket.title} (ID: {ticket.id})
+                  </span>
+                  <span style={{ fontSize: "12px", color: "#666" }}>
+                    Created: {new Date(ticket.createdAt).toLocaleString()}
+                  </span>
+                  <span style={{ fontSize: "12px", color: "#666" }}>
+                    Updated: {new Date(ticket.updatedAt).toLocaleString()}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div>
         <h4>Existing Tickets ({tickets?.length || 0}):</h4>
         <ul>
           {tickets?.map((ticket) => (
@@ -363,6 +408,18 @@ const TicketTest: React.FC = () => {
                   style={{ width: 120 }}
                   onChange={(labelId) =>
                     handleAddLabelToTicket(ticket.id, labelId)
+                  }
+                  options={labels?.map((label) => ({
+                    label: label.title,
+                    value: label.id,
+                  }))}
+                />
+                <Select
+                  size="small"
+                  placeholder="Remove tag"
+                  style={{ width: 120 }}
+                  onChange={(labelId) =>
+                    handleRemoveLabelFromTicket(ticket.id, labelId)
                   }
                   options={labels?.map((label) => ({
                     label: label.title,
