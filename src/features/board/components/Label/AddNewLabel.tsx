@@ -1,7 +1,8 @@
 import React from "react";
-import { Modal, Form, Input, Button, message } from "antd";
+import { Modal, Form, Input, Button } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
-import { useCreateCategoryMutation } from "@/store/services/categoryApi";
+import { useCreateLabelMutation } from "@/store/services/labelApi";
+import toast from "react-hot-toast";
 
 interface AddNewLabelProps {
   visible: boolean;
@@ -11,7 +12,6 @@ interface AddNewLabelProps {
 
 interface LabelFormData {
   title: string;
-  user_guid: string;
 }
 
 const AddNewLabel: React.FC<AddNewLabelProps> = ({
@@ -20,25 +20,26 @@ const AddNewLabel: React.FC<AddNewLabelProps> = ({
   onCancel,
 }) => {
   const [form] = Form.useForm<LabelFormData>();
-  const [createCategory, { isLoading }] = useCreateCategoryMutation();
+  const [createLabel, { isLoading }] = useCreateLabelMutation();
 
   const handleSubmit = async (values: LabelFormData) => {
     if (!values.title.trim()) {
-      message.error("Label title is required");
+      toast.error("Label title is required");
       return;
     }
 
     try {
-      await createCategory({
+      await createLabel({
         title: values.title.trim(),
       }).unwrap();
-      message.success("Category created successfully!");
+      toast.success("Label created successfully!");
       form.resetFields();
       onSuccess();
     } catch (error) {
       const errorMessage =
-        (error as any)?.data?.message || "Failed to create category";
-      message.error(errorMessage);
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Failed to create label";
+      toast.error(errorMessage);
     }
   };
 
@@ -102,10 +103,6 @@ const AddNewLabel: React.FC<AddNewLabelProps> = ({
             autoFocus
             onPressEnter={() => form.submit()}
           />
-        </Form.Item>
-
-        <Form.Item name="user_guid" label="User ID" hidden>
-          <Input />
         </Form.Item>
 
         <div className="flex justify-end space-x-2 mt-6 gap-4">

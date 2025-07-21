@@ -1,18 +1,24 @@
 import PageTransition from "@/components/common/PageTransition";
-import { Button } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Button, Space } from "antd";
+import { PlusOutlined, TagsOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
 import AddNewLabel from "@/features/board/components/Label/AddNewLabel";
+import LabelManagement from "@/features/board/components/Label/LabelManagement";
 import Label from "@/features/board/components/Label/Label";
 import { useGetCategoriesQuery } from "@/store/services/categoryApi";
 
 const TodoBoard = () => {
   const [isAddLabelVisible, setIsAddLabelVisible] = useState(false);
+  const [isLabelManagementVisible, setIsLabelManagementVisible] =
+    useState(false);
   const { data: categories, error, isLoading } = useGetCategoriesQuery();
 
   const handleAddLabel = () => setIsAddLabelVisible(true);
   const handleAddLabelSuccess = () => setIsAddLabelVisible(false);
   const handleAddLabelCancel = () => setIsAddLabelVisible(false);
+
+  const handleLabelManagement = () => setIsLabelManagementVisible(true);
+  const handleLabelManagementClose = () => setIsLabelManagementVisible(false);
 
   if (isLoading) {
     return (
@@ -43,13 +49,18 @@ const TodoBoard = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Task Board</h1>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddLabel}
-            >
-              Add Label
-            </Button>
+            <Space>
+              <Button icon={<TagsOutlined />} onClick={handleLabelManagement}>
+                Manage Labels
+              </Button>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAddLabel}
+              >
+                Add Category
+              </Button>
+            </Space>
           </div>
           {/* Board Content with horizontal scroll */}
           <div className="overflow-x-auto pb-4">
@@ -75,6 +86,10 @@ const TodoBoard = () => {
           visible={isAddLabelVisible}
           onSuccess={handleAddLabelSuccess}
           onCancel={handleAddLabelCancel}
+        />
+        <LabelManagement
+          visible={isLabelManagementVisible}
+          onClose={handleLabelManagementClose}
         />
       </div>
     </PageTransition>
