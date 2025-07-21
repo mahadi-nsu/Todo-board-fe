@@ -4,20 +4,38 @@ import { PlusOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
 import AddNewLabel from "@/features/board/components/Label/AddNewLabel";
 import Label from "@/features/board/components/Label/Label";
-
-// FIXME: Have to replace this with real data
-const dummyLabels = [
-  { guid: "1", title: "To Do" },
-  { guid: "2", title: "In Progress" },
-  { guid: "3", title: "Done" },
-];
+import { useGetCategoriesQuery } from "@/store/services/categoryApi";
 
 const TodoBoard = () => {
   const [isAddLabelVisible, setIsAddLabelVisible] = useState(false);
+  const { data: categories, error, isLoading } = useGetCategoriesQuery();
 
   const handleAddLabel = () => setIsAddLabelVisible(true);
   const handleAddLabelSuccess = () => setIsAddLabelVisible(false);
   const handleAddLabelCancel = () => setIsAddLabelVisible(false);
+
+  if (isLoading) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div>Loading board...</div>
+        </div>
+      </PageTransition>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-red-500">
+            Error loading board:{" "}
+            {"status" in error ? `HTTP ${error.status}` : "Unknown error"}
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
@@ -36,12 +54,18 @@ const TodoBoard = () => {
           {/* Board Content with horizontal scroll */}
           <div className="overflow-x-auto pb-4">
             <div className="flex flex-row gap-4 min-w-max">
-              {dummyLabels.map((label) => (
+              {categories?.map((category) => (
                 <div
-                  key={label.guid}
+                  key={category.id}
                   className="min-w-[320px] max-w-xs flex-shrink-0"
                 >
-                  <Label label={label} onTicketUpdate={() => {}} />
+                  <Label
+                    label={{
+                      guid: category.id.toString(),
+                      title: category.title,
+                    }}
+                    onTicketUpdate={() => {}}
+                  />
                 </div>
               ))}
             </div>

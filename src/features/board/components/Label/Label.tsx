@@ -5,6 +5,7 @@ import LabelTitle from "./LabelTitle";
 import Ticket from "../Ticket/Ticket";
 import type { TicketData } from "../Ticket/Ticket";
 import AddNewTicket from "../Ticket/AddNewTicket";
+import { useGetTicketsQuery } from "@/store/services/ticketApi";
 
 interface LabelProps {
   label: { guid: string; title: string };
@@ -13,21 +14,20 @@ interface LabelProps {
 
 const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
   const [isAddTicketVisible, setIsAddTicketVisible] = useState(false);
-  // Dummy tickets for design
-  const tickets: TicketData[] = [
-    {
-      guid: "t1",
-      title: "Sample Ticket 1",
-      description: "This is a sample ticket description for design purposes.",
-      tags: ["Expires today", "frontend", "high"],
-    },
-    {
-      guid: "t2",
-      title: "Sample Ticket 2",
-      description: "Another ticket with a different description.",
-      tags: ["backend", "low"],
-    },
-  ];
+  const { data: allTickets, isLoading } = useGetTicketsQuery();
+
+  // Filter tickets for this category (label)
+  const categoryId = parseInt(label.guid);
+  const tickets =
+    allTickets?.filter((ticket) => ticket.categoryId === categoryId) || [];
+
+  // Convert API tickets to TicketData format
+  const ticketData: TicketData[] = tickets.map((ticket) => ({
+    guid: ticket.id.toString(),
+    title: ticket.title,
+    description: ticket.description || "No description",
+    tags: [], // We'll add tags later when we implement label fetching
+  }));
 
   const menuItems = [
     {
@@ -58,7 +58,7 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
           <LabelTitle label={label} onSuccess={() => {}} onCancel={() => {}} />
         </div>
         <Space>
-          <Badge count={tickets.length} showZero />
+          <Badge count={ticketData.length} showZero />
           <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
             <Button type="text" icon={<MoreOutlined />} size="small" />
           </Dropdown>
@@ -76,7 +76,9 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
             <div className="text-sm">Drop tickets here or add new ones</div>
           </div>
         ) : (
-          tickets.map((ticket) => <Ticket key={ticket.guid} ticket={ticket} />)
+          ticketData.map((ticket) => (
+            <Ticket key={ticket.guid} ticket={ticket} />
+          ))
         )}
       </div>
 

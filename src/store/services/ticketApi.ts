@@ -3,6 +3,9 @@ import { api } from "../api";
 export interface Ticket {
   id: number;
   title: string;
+  description?: string;
+  categoryId?: number;
+  expiresAt?: string;
   createdAt: string;
   updatedAt: string;
 }
