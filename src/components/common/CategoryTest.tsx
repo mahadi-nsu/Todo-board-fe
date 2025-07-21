@@ -4,6 +4,7 @@ import {
   useGetCategoriesQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
 } from "@/store/services/categoryApi";
 
 const CategoryTest: React.FC = () => {
@@ -12,6 +13,8 @@ const CategoryTest: React.FC = () => {
     useCreateCategoryMutation();
   const [updateCategory, { isLoading: isUpdating }] =
     useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: isDeleting }] =
+    useDeleteCategoryMutation();
   const [newCategoryTitle, setNewCategoryTitle] = React.useState("");
   const [editingCategory, setEditingCategory] = React.useState<{
     id: number;
@@ -57,6 +60,32 @@ const CategoryTest: React.FC = () => {
 
   const handleCancelEdit = () => {
     setEditingCategory(null);
+  };
+
+  const handleDeleteCategory = async (categoryId: number) => {
+    // For simplicity, we'll move tickets to the first available category
+    // In a real app, you'd show a dropdown to select destination category
+    const otherCategories =
+      categories?.filter((cat) => cat.id !== categoryId) || [];
+
+    if (otherCategories.length === 0) {
+      message.error(
+        "Cannot delete the last category. Create another category first."
+      );
+      return;
+    }
+
+    const destinationCategoryId = otherCategories[0].id;
+
+    try {
+      await deleteCategory({
+        id: categoryId,
+        moveExistingTicketsToCategoryId: destinationCategoryId,
+      }).unwrap();
+      message.success("Category deleted successfully!");
+    } catch (error) {
+      message.error("Failed to delete category");
+    }
   };
 
   if (isLoading) {
@@ -158,6 +187,14 @@ const CategoryTest: React.FC = () => {
                     onClick={() => handleEditCategory(category)}
                   >
                     Edit
+                  </Button>
+                  <Button
+                    size="small"
+                    danger
+                    onClick={() => handleDeleteCategory(category.id)}
+                    loading={isDeleting}
+                  >
+                    Delete
                   </Button>
                 </div>
               )}

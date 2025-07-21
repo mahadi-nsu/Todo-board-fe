@@ -38,6 +38,16 @@ export const categoryApi = api.injectEndpoints({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: "Category", id }],
     }),
+    deleteCategory: builder.mutation<
+      void,
+      { id: number; moveExistingTicketsToCategoryId: number }
+    >({
+      query: ({ id, moveExistingTicketsToCategoryId }) => ({
+        url: `/categories/${id}?moveExistingTicketsToCategoryId=${moveExistingTicketsToCategoryId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Category"],
+    }),
   }),
 });
 
@@ -45,4 +55,5 @@ export const {
   useGetCategoriesQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
 } = categoryApi;
