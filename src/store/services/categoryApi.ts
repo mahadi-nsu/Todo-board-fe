@@ -11,6 +11,11 @@ export interface CreateCategoryRequest {
   title: string;
 }
 
+export interface UpdateCategoryRequest {
+  id: number;
+  title: string;
+}
+
 export const categoryApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getCategories: builder.query<Category[], void>({
@@ -25,7 +30,19 @@ export const categoryApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Category"],
     }),
+    updateCategory: builder.mutation<Category, UpdateCategoryRequest>({
+      query: ({ id, ...patch }) => ({
+        url: `/categories/${id}`,
+        method: "PATCH",
+        body: patch,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Category", id }],
+    }),
   }),
 });
 
-export const { useGetCategoriesQuery, useCreateCategoryMutation } = categoryApi;
+export const {
+  useGetCategoriesQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+} = categoryApi;
