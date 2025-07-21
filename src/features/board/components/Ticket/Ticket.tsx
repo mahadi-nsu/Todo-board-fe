@@ -5,14 +5,35 @@ const { Text, Title } = Typography;
 
 // TODO: Will move this when connecting with api's
 export interface TicketData {
-  guid: string;
+  id: number;
   title: string;
   description: string;
-  tags: string[];
+  expiresAt?: string;
+  categoryId?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  labels?: Array<{
+    label: {
+      id: number;
+      title: string;
+    };
+  }>;
+  category?: {
+    id: number;
+    title: string;
+  };
+  history?: Array<{
+    createdAt: string;
+    category: {
+      id: number;
+      title: string;
+    };
+  }>;
 }
 
 interface TicketProps {
   ticket: TicketData;
+  onClick?: (ticket: TicketData) => void;
 }
 
 const tagColors: Record<string, string> = {
@@ -23,12 +44,19 @@ const tagColors: Record<string, string> = {
   low: "green",
 };
 
-const Ticket: React.FC<TicketProps> = ({ ticket }) => {
+const Ticket: React.FC<TicketProps> = ({ ticket, onClick }) => {
+  const handleClick = () => {
+    if (onClick) {
+      onClick(ticket);
+    }
+  };
+
   return (
     <Card
       className="mb-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
       size="small"
       bodyStyle={{ padding: "12px" }}
+      onClick={handleClick}
     >
       <Title level={5} className="mb-2 text-gray-800 truncate">
         {ticket.title}
@@ -46,9 +74,12 @@ const Ticket: React.FC<TicketProps> = ({ ticket }) => {
         {ticket.description}
       </Text>
       <Space size="small">
-        {ticket.tags.map((tag) => (
-          <Tag key={tag} color={tagColors[tag] || "default"}>
-            {tag}
+        {ticket.labels?.map((labelItem) => (
+          <Tag
+            key={labelItem.label.id}
+            color={tagColors[labelItem.label.title] || "default"}
+          >
+            {labelItem.label.title}
           </Tag>
         ))}
       </Space>

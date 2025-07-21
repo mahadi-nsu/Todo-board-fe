@@ -8,6 +8,23 @@ export interface Ticket {
   expiresAt?: string;
   createdAt: string;
   updatedAt: string;
+  labels?: Array<{
+    label: {
+      id: number;
+      title: string;
+    };
+  }>;
+  category?: {
+    id: number;
+    title: string;
+  };
+  history?: Array<{
+    createdAt: string;
+    category: {
+      id: number;
+      title: string;
+    };
+  }>;
 }
 
 export interface CreateTicketRequest {
@@ -53,7 +70,10 @@ export const ticketApi = api.injectEndpoints({
         method: "PATCH",
         body: patch,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: "Ticket", id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Ticket", id },
+        "Ticket", // Also invalidate the general tickets list
+      ],
     }),
     deleteTicket: builder.mutation<void, number>({
       query: (id) => ({

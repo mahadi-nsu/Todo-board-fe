@@ -19,7 +19,12 @@ import LabelTitle from "./LabelTitle";
 import Ticket from "../Ticket/Ticket";
 import type { TicketData } from "../Ticket/Ticket";
 import AddNewTicket from "../Ticket/AddNewTicket";
-import { useGetTicketsQuery } from "@/store/services/ticketApi";
+import TicketViewModal from "../Ticket/TicketViewModal";
+import {
+  useGetTicketsQuery,
+  useUpdateTicketMutation,
+  useDeleteTicketMutation,
+} from "@/store/services/ticketApi";
 import {
   useDeleteCategoryMutation,
   useGetCategoriesQuery,
@@ -36,10 +41,14 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [selectedDestinationCategory, setSelectedDestinationCategory] =
     useState<number | null>(null);
-  const { data: allTickets } = useGetTicketsQuery();
+  const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
+  const [isTicketModalVisible, setIsTicketModalVisible] = useState(false);
+  const { data: allTickets, refetch: refetchTickets } = useGetTicketsQuery();
   const { data: categories } = useGetCategoriesQuery();
   const [deleteCategory, { isLoading: isDeleting }] =
     useDeleteCategoryMutation();
+  const [updateTicket] = useUpdateTicketMutation();
+  const [deleteTicket] = useDeleteTicketMutation();
 
   // Filter tickets for this category (label)
   const categoryId = parseInt(label.guid);
@@ -48,10 +57,16 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
 
   // Convert API tickets to TicketData format
   const ticketData: TicketData[] = tickets.map((ticket) => ({
-    guid: ticket.id.toString(),
+    id: ticket.id,
     title: ticket.title,
     description: ticket.description || "No description",
-    tags: [], // We'll add tags later when we implement label fetching
+    expiresAt: ticket.expiresAt,
+    categoryId: ticket.categoryId,
+    createdAt: ticket.createdAt,
+    updatedAt: ticket.updatedAt,
+    labels: ticket.labels,
+    category: ticket.category,
+    history: ticket.history,
   }));
 
   const handleDeleteCategory = () => {
@@ -79,7 +94,8 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
     } catch (error) {
       console.error("Delete category error:", error);
       const errorMessage =
-        (error as any)?.data?.message || "Failed to delete category";
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Failed to delete category";
       message.error(errorMessage);
     }
   };
@@ -91,6 +107,75 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
 
   const handleEditCategory = () => {
     setIsEditingTitle(true);
+  };
+
+  const handleTicketClick = (ticket: TicketData) => {
+    setSelectedTicket(ticket);
+    setIsTicketModalVisible(true);
+  };
+
+  const handleTicketUpdate = async (updatedTicket: Partial<TicketData>) => {
+    if (!selectedTicket) return;
+
+    try {
+      const ticketId = selectedTicket.id;
+      const updateData: {
+        id: number;
+        title?: string;
+        description?: string;
+        expiresAt?: string;
+        categoryId?: number;
+      } = {
+        id: ticketId,
+      };
+
+      if (updatedTicket.title) updateData.title = updatedTicket.title;
+      if (updatedTicket.description)
+        updateData.description = updatedTicket.description;
+      if (updatedTicket.expiresAt)
+        updateData.expiresAt = updatedTicket.expiresAt;
+
+      // Always include categoryId as it's required by the API
+      updateData.categoryId = selectedTicket.categoryId || parseInt(label.guid);
+
+      await updateTicket(updateData).unwrap();
+      message.success("Ticket updated successfully!");
+      await refetchTickets(); // Refetch tickets to get updated data
+      setIsTicketModalVisible(false); // Close the modal
+      setSelectedTicket(null); // Clear selected ticket
+      onTicketUpdate();
+    } catch (error) {
+      console.error("Update ticket error:", error);
+      const errorMessage =
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Failed to update ticket";
+      message.error(errorMessage);
+    }
+  };
+
+  const handleCloseTicketModal = () => {
+    setIsTicketModalVisible(false);
+    setSelectedTicket(null);
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!selectedTicket) return;
+
+    try {
+      const ticketId = selectedTicket.id;
+      await deleteTicket(ticketId).unwrap();
+      message.success("Ticket deleted successfully!");
+      await refetchTickets(); // Refetch tickets to get updated data
+      setIsTicketModalVisible(false);
+      setSelectedTicket(null);
+      onTicketUpdate();
+    } catch (error) {
+      console.error("Delete ticket error:", error);
+      const errorMessage =
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Failed to delete ticket";
+      message.error(errorMessage);
+    }
   };
 
   const menuItems = [
@@ -150,7 +235,11 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
           </div>
         ) : (
           ticketData.map((ticket) => (
-            <Ticket key={ticket.guid} ticket={ticket} />
+            <Ticket
+              key={ticket.id}
+              ticket={ticket}
+              onClick={handleTicketClick}
+            />
           ))
         )}
       </div>
@@ -175,6 +264,15 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
         categoryId={parseInt(label.guid)}
         onSuccess={() => setIsAddTicketVisible(false)}
         onCancel={() => setIsAddTicketVisible(false)}
+      />
+
+      {/* Ticket View Modal */}
+      <TicketViewModal
+        visible={isTicketModalVisible}
+        ticket={selectedTicket}
+        onClose={handleCloseTicketModal}
+        onUpdate={handleTicketUpdate}
+        onDelete={handleDeleteTicket}
       />
 
       {/* Delete Category Modal */}
