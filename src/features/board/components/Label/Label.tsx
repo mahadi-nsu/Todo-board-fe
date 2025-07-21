@@ -99,6 +99,7 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
       <AddNewTicket
         visible={isAddTicketVisible}
         labelTitle={label.title}
+        categoryId={parseInt(label.guid)}
         onSuccess={() => setIsAddTicketVisible(false)}
         onCancel={() => setIsAddTicketVisible(false)}
       />

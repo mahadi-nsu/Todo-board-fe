@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Modal, Form, Input, DatePicker, Button, message } from "antd";
 import { PlusOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
+import { useCreateTicketMutation } from "@/store/services/ticketApi";
 
 const { TextArea } = Input;
 
 interface AddNewTicketProps {
   visible: boolean;
   labelTitle: string;
+  categoryId: number;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -23,11 +25,12 @@ interface TicketFormData {
 const AddNewTicket: React.FC<AddNewTicketProps> = ({
   visible,
   labelTitle,
+  categoryId,
   onSuccess,
   onCancel,
 }) => {
   const [form] = Form.useForm<TicketFormData>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
 
   useEffect(() => {
     if (visible) {
@@ -49,18 +52,27 @@ const AddNewTicket: React.FC<AddNewTicketProps> = ({
       message.error("Ticket description is required");
       return;
     }
-    setIsSubmitting(true);
-    setTimeout(() => {
+
+    try {
+      await createTicket({
+        title: values.title.trim(),
+        description: values.description.trim(),
+        expiresAt: values.expiry_date.toISOString(),
+        categoryId: categoryId,
+      }).unwrap();
+
       message.success("Ticket created successfully!");
       form.resetFields();
-      setIsSubmitting(false);
       onSuccess();
-    }, 800);
+    } catch (error) {
+      const errorMessage =
+        (error as any)?.data?.message || "Failed to create ticket";
+      message.error(errorMessage);
+    }
   };
 
   const handleCancel = () => {
     form.resetFields();
-    setIsSubmitting(false);
     onCancel();
   };
 
@@ -216,7 +228,7 @@ const AddNewTicket: React.FC<AddNewTicketProps> = ({
           <Button
             icon={<CloseOutlined />}
             onClick={handleCancel}
-            disabled={isSubmitting}
+            disabled={isCreating}
           >
             Cancel
           </Button>
@@ -224,7 +236,7 @@ const AddNewTicket: React.FC<AddNewTicketProps> = ({
             type="primary"
             icon={<SaveOutlined />}
             htmlType="submit"
-            loading={isSubmitting}
+            loading={isCreating}
           >
             Create Ticket
           </Button>
