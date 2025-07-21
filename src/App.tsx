@@ -7,8 +7,6 @@ import TodoBoard from "./features/board";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import Layout from "./components/common/Layout";
 import AuthRedirect from "./components/common/AuthRedirect";
-import CategoryTest from "./components/common/CategoryTest";
-import TicketTest from "./components/common/TicketTest";
 
 function App() {
   return (
@@ -37,8 +35,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <CategoryTest />
-                    <TicketTest />
                     <TodoBoard />
                   </Layout>
                 </ProtectedRoute>
