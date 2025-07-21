@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
-// import { useCreateLabelMutation } from "@/store/api/labelApi"; // Uncomment and adjust path as needed
+import { useCreateCategoryMutation } from "@/store/services/categoryApi";
 
 interface AddNewLabelProps {
   visible: boolean;
@@ -20,10 +20,7 @@ const AddNewLabel: React.FC<AddNewLabelProps> = ({
   onCancel,
 }) => {
   const [form] = Form.useForm<LabelFormData>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // const [createLabel, { isLoading }] = useCreateLabelMutation(); // Uncomment and adjust path as needed
-  const isLoading = false; // Remove this when using the actual mutation
+  const [createCategory, { isLoading }] = useCreateCategoryMutation();
 
   const handleSubmit = async (values: LabelFormData) => {
     if (!values.title.trim()) {
@@ -31,26 +28,22 @@ const AddNewLabel: React.FC<AddNewLabelProps> = ({
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      // await createLabel({
-      //   title: values.title.trim(),
-      //   user_guid: values.user_guid || "user-1",
-      // }).unwrap();
-      message.success("Label created successfully!");
+      await createCategory({
+        title: values.title.trim(),
+      }).unwrap();
+      message.success("Category created successfully!");
       form.resetFields();
       onSuccess();
     } catch (error) {
-      console.error("Failed to create label:", error);
-      message.error("Failed to create label. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      const errorMessage =
+        (error as any)?.data?.message || "Failed to create category";
+      message.error(errorMessage);
     }
   };
 
   const handleCancel = () => {
     form.resetFields();
-    setIsSubmitting(false);
     onCancel();
   };
 
@@ -119,7 +112,7 @@ const AddNewLabel: React.FC<AddNewLabelProps> = ({
           <Button
             icon={<CloseOutlined />}
             onClick={handleCancel}
-            disabled={isSubmitting || isLoading}
+            disabled={isLoading}
           >
             Cancel
           </Button>
@@ -127,7 +120,7 @@ const AddNewLabel: React.FC<AddNewLabelProps> = ({
             type="primary"
             icon={<SaveOutlined />}
             htmlType="submit"
-            loading={isSubmitting || isLoading}
+            loading={isLoading}
           >
             Create Label
           </Button>

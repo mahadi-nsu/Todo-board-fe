@@ -1,11 +1,29 @@
 import React, { useState } from "react";
-import { Card, Button, Space, Badge, Dropdown } from "antd";
-import { MoreOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Button,
+  Space,
+  Badge,
+  Dropdown,
+  message,
+  Modal,
+  Select,
+} from "antd";
+import {
+  MoreOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 import LabelTitle from "./LabelTitle";
 import Ticket from "../Ticket/Ticket";
 import type { TicketData } from "../Ticket/Ticket";
 import AddNewTicket from "../Ticket/AddNewTicket";
 import { useGetTicketsQuery } from "@/store/services/ticketApi";
+import {
+  useDeleteCategoryMutation,
+  useGetCategoriesQuery,
+} from "@/store/services/categoryApi";
 
 interface LabelProps {
   label: { guid: string; title: string };
@@ -14,7 +32,14 @@ interface LabelProps {
 
 const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
   const [isAddTicketVisible, setIsAddTicketVisible] = useState(false);
-  const { data: allTickets, isLoading } = useGetTicketsQuery();
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [selectedDestinationCategory, setSelectedDestinationCategory] =
+    useState<number | null>(null);
+  const { data: allTickets } = useGetTicketsQuery();
+  const { data: categories } = useGetCategoriesQuery();
+  const [deleteCategory, { isLoading: isDeleting }] =
+    useDeleteCategoryMutation();
 
   // Filter tickets for this category (label)
   const categoryId = parseInt(label.guid);
@@ -29,15 +54,58 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
     tags: [], // We'll add tags later when we implement label fetching
   }));
 
+  const handleDeleteCategory = () => {
+    console.log("Delete category clicked for:", label.title, "ID:", label.guid);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedDestinationCategory) {
+      message.warning(
+        "Please select a destination category for existing tickets"
+      );
+      return;
+    }
+
+    try {
+      console.log("Attempting to delete category:", parseInt(label.guid));
+      await deleteCategory({
+        id: parseInt(label.guid),
+        moveExistingTicketsToCategoryId: selectedDestinationCategory,
+      }).unwrap();
+      message.success("Category deleted successfully!");
+      setIsDeleteModalVisible(false);
+      setSelectedDestinationCategory(null);
+    } catch (error) {
+      console.error("Delete category error:", error);
+      const errorMessage =
+        (error as any)?.data?.message || "Failed to delete category";
+      message.error(errorMessage);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalVisible(false);
+    setSelectedDestinationCategory(null);
+  };
+
+  const handleEditCategory = () => {
+    setIsEditingTitle(true);
+  };
+
   const menuItems = [
+    {
+      key: "edit",
+      icon: <EditOutlined />,
+      label: "Edit Label",
+      onClick: handleEditCategory,
+    },
     {
       key: "delete",
       icon: <DeleteOutlined />,
       label: "Delete Label",
       danger: true,
-      onClick: () => {
-        // No-op for demo
-      },
+      onClick: handleDeleteCategory,
     },
   ];
 
@@ -55,7 +123,12 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
       {/* Label Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex-1">
-          <LabelTitle label={label} onSuccess={() => {}} onCancel={() => {}} />
+          <LabelTitle
+            label={label}
+            onSuccess={() => setIsEditingTitle(false)}
+            onCancel={() => setIsEditingTitle(false)}
+            forceEdit={isEditingTitle}
+          />
         </div>
         <Space>
           <Badge count={ticketData.length} showZero />
@@ -103,6 +176,48 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
         onSuccess={() => setIsAddTicketVisible(false)}
         onCancel={() => setIsAddTicketVisible(false)}
       />
+
+      {/* Delete Category Modal */}
+      <Modal
+        title="Delete Category"
+        open={isDeleteModalVisible}
+        onOk={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        okText="Delete"
+        cancelText="Cancel"
+        okType="danger"
+        confirmLoading={isDeleting}
+      >
+        <div style={{ marginBottom: "16px" }}>
+          <p>
+            Are you sure you want to delete <strong>"{label.title}"</strong>?
+          </p>
+          <p style={{ marginTop: "8px", color: "#666" }}>
+            All tickets in this category will be moved to the selected
+            destination category.
+          </p>
+        </div>
+
+        <div>
+          <label style={{ display: "block", marginBottom: "8px" }}>
+            Move existing tickets to:
+          </label>
+          <Select
+            placeholder="Select destination category"
+            style={{ width: "100%" }}
+            value={selectedDestinationCategory}
+            onChange={setSelectedDestinationCategory}
+            options={
+              categories
+                ?.filter((cat) => cat.id !== parseInt(label.guid))
+                .map((cat) => ({
+                  label: cat.title,
+                  value: cat.id,
+                })) || []
+            }
+          />
+        </div>
+      </Modal>
     </Card>
   );
 };
