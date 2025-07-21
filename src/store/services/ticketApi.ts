@@ -91,7 +91,10 @@ export const ticketApi = api.injectEndpoints({
         method: "POST",
         body: { labelId },
       }),
-      invalidatesTags: ["Ticket"],
+      invalidatesTags: (result, error, { ticketId }) => [
+        { type: "Ticket", id: ticketId },
+        "Ticket",
+      ],
     }),
     removeLabelFromTicket: builder.mutation<
       void,
@@ -101,7 +104,10 @@ export const ticketApi = api.injectEndpoints({
         url: `/tickets/${ticketId}/labels/${labelId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Ticket"],
+      invalidatesTags: (result, error, { ticketId }) => [
+        { type: "Ticket", id: ticketId },
+        "Ticket",
+      ],
     }),
   }),
 });

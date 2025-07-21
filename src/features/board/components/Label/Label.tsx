@@ -161,6 +161,12 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
     setSelectedTicket(null);
   };
 
+  const handleLabelUpdate = async () => {
+    // Just refetch tickets to get updated label data without closing modal
+    await refetchTickets();
+    onTicketUpdate();
+  };
+
   const handleDeleteTicket = async () => {
     if (!selectedTicket) return;
 
@@ -390,6 +396,7 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
         onClose={handleCloseTicketModal}
         onUpdate={handleTicketUpdate}
         onDelete={handleDeleteTicket}
+        onLabelUpdate={handleLabelUpdate}
       />
 
       {/* Delete Category Modal */}

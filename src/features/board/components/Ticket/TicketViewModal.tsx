@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Tabs,
@@ -7,19 +7,27 @@ import {
   DatePicker,
   Button,
   Space,
-  message,
   List,
   Tag,
+  Select,
+  Divider,
 } from "antd";
+import toast from "react-hot-toast";
 import {
   EditOutlined,
   SaveOutlined,
   CloseOutlined,
   DeleteOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { TicketData } from "./Ticket";
-import { useGetTicketHistoryQuery } from "@/store/services/ticketApi";
+import {
+  useGetTicketHistoryQuery,
+  useAddLabelToTicketMutation,
+  useRemoveLabelFromTicketMutation,
+} from "@/store/services/ticketApi";
+import { useGetLabelsQuery } from "@/store/services/labelApi";
 
 const { TextArea } = Input;
 const { TabPane } = Tabs;
@@ -30,6 +38,7 @@ interface TicketViewModalProps {
   onClose: () => void;
   onUpdate: (updatedTicket: Partial<TicketData>) => void;
   onDelete?: () => void;
+  onLabelUpdate?: () => void;
 }
 
 const TicketViewModal: React.FC<TicketViewModalProps> = ({
@@ -38,14 +47,25 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   onClose,
   onUpdate,
   onDelete,
+  onLabelUpdate,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
+  const [selectedLabelIds, setSelectedLabelIds] = useState<number[]>([]);
+  const [localTicket, setLocalTicket] = useState<TicketData | null>(null);
   const {
     data: historyData,
     isLoading: isLoadingHistory,
     error: historyError,
   } = useGetTicketHistoryQuery();
+  const { data: availableLabels } = useGetLabelsQuery();
+  const [addLabelToTicket] = useAddLabelToTicketMutation();
+  const [removeLabelFromTicket] = useRemoveLabelFromTicketMutation();
+
+  // Sync local ticket state with prop
+  useEffect(() => {
+    setLocalTicket(ticket);
+  }, [ticket]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -70,7 +90,7 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
 
       await onUpdate(updatedTicket);
       setIsEditing(false);
-      message.success("Ticket updated successfully!");
+      toast.success("Ticket updated successfully!");
     } catch (error) {
       console.error("Form validation error:", error);
     }
@@ -79,6 +99,144 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   const handleCancel = () => {
     setIsEditing(false);
     form.resetFields();
+  };
+
+  const handleAddLabels = async () => {
+    if (selectedLabelIds.length === 0 || !localTicket) return;
+
+    // Store original state for rollback
+    const originalTicket = { ...localTicket };
+    const labelsToAdd = selectedLabelIds;
+
+    try {
+      // Optimistic update - update UI immediately
+      if (localTicket && availableLabels) {
+        const addedLabels = availableLabels.filter((label) =>
+          labelsToAdd.includes(label.id)
+        );
+        const newLabels = addedLabels.map((label) => ({
+          label: { id: label.id, title: label.title },
+        }));
+
+        setLocalTicket({
+          ...localTicket,
+          labels: [...(localTicket.labels || []), ...newLabels],
+        });
+      }
+
+      // API calls
+      for (const labelId of labelsToAdd) {
+        await addLabelToTicket({
+          ticketId: localTicket.id,
+          labelId: labelId,
+        }).unwrap();
+      }
+
+      setSelectedLabelIds([]);
+
+      // Trigger parent update to refresh ticket data
+      if (onLabelUpdate) {
+        onLabelUpdate();
+      }
+    } catch (error) {
+      console.error("Add labels error:", error);
+
+      // Rollback to original state on error
+      setLocalTicket(originalTicket);
+
+      // Enhanced error handling with better debugging
+      let errorMessage = "Failed to add labels";
+
+      if (error && typeof error === "object") {
+        console.log("Error object:", error);
+        console.log(
+          "Error data:",
+          (error as { data?: { message?: string } }).data
+        );
+        console.log("Error status:", (error as { status?: number }).status);
+
+        const errorData = (error as { data?: { message?: string } }).data;
+        const errorStatus = (error as { status?: number }).status;
+        const errorMessageProp = (error as { message?: string }).message;
+
+        if (errorData?.message) {
+          errorMessage = errorData.message;
+        } else if (errorStatus) {
+          errorMessage = `Server error: ${errorStatus}`;
+        } else if (errorMessageProp) {
+          errorMessage = errorMessageProp;
+        }
+      }
+
+      console.log("Showing error message:", errorMessage);
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleRemoveLabel = async (labelId: number) => {
+    if (!localTicket) return;
+
+    // Store original state for rollback
+    const originalTicket = { ...localTicket };
+
+    try {
+      // Optimistic update - update UI immediately
+      if (localTicket) {
+        setLocalTicket({
+          ...localTicket,
+          labels:
+            localTicket.labels?.filter(
+              (labelItem) => labelItem.label.id !== labelId
+            ) || [],
+        });
+      }
+
+      // API call
+      await removeLabelFromTicket({
+        ticketId: localTicket.id,
+        labelId: labelId,
+      }).unwrap();
+
+      // Trigger parent update to refresh ticket data
+      if (onLabelUpdate) {
+        onLabelUpdate();
+      }
+    } catch (error) {
+      console.error("Remove label error:", error);
+
+      // Rollback to original state on error
+      setLocalTicket(originalTicket);
+
+      // Enhanced error handling with better debugging
+      let errorMessage = "Failed to remove label";
+
+      if (error && typeof error === "object") {
+        console.log("Remove label error object:", error);
+        console.log(
+          "Remove label error data:",
+          (error as { data?: { message?: string } }).data
+        );
+        console.log(
+          "Remove label error status:",
+          (error as { status?: number }).status
+        );
+
+        const errorData = (error as { data?: { message?: string } }).data;
+        const errorStatus = (error as { status?: number }).status;
+        const errorMessageProp = (error as { message?: string }).message;
+
+        if (errorData?.message) {
+          errorMessage = errorData.message;
+        } else if (errorStatus) {
+          errorMessage = `Server error: ${errorStatus}`;
+        } else if (errorMessageProp) {
+          errorMessage = errorMessageProp;
+        }
+      }
+
+      console.log("Showing remove label error message:", errorMessage);
+      toast.error(errorMessage);
+    }
   };
 
   const renderDetailsTab = () => (
@@ -109,19 +267,19 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
         <div>
           <div style={{ marginBottom: "16px" }}>
             <strong>Title:</strong>
-            <div style={{ marginTop: "4px" }}>{ticket?.title}</div>
+            <div style={{ marginTop: "4px" }}>{localTicket?.title}</div>
           </div>
 
           <div style={{ marginBottom: "16px" }}>
             <strong>Description:</strong>
-            <div style={{ marginTop: "4px" }}>{ticket?.description}</div>
+            <div style={{ marginTop: "4px" }}>{localTicket?.description}</div>
           </div>
 
           <div style={{ marginBottom: "16px" }}>
             <strong>Expires At:</strong>
             <div style={{ marginTop: "4px" }}>
-              {ticket?.expiresAt
-                ? dayjs(ticket.expiresAt).format("YYYY-MM-DD HH:mm")
+              {localTicket?.expiresAt
+                ? dayjs(localTicket.expiresAt).format("YYYY-MM-DD HH:mm")
                 : "Not set"}
             </div>
           </div>
@@ -129,17 +287,22 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
           <div style={{ marginBottom: "16px" }}>
             <strong>Category:</strong>
             <div style={{ marginTop: "4px" }}>
-              {ticket?.category?.title || "Not assigned"}
+              {localTicket?.category?.title || "Not assigned"}
             </div>
           </div>
 
           <div style={{ marginBottom: "16px" }}>
             <strong>Labels:</strong>
             <div style={{ marginTop: "4px" }}>
-              {ticket?.labels && ticket.labels.length > 0 ? (
+              {localTicket?.labels && localTicket.labels.length > 0 ? (
                 <Space size="small">
-                  {ticket.labels.map((labelItem) => (
-                    <Tag key={labelItem.label.id} color="blue">
+                  {localTicket.labels.map((labelItem) => (
+                    <Tag
+                      key={labelItem.label.id}
+                      color="blue"
+                      closable
+                      onClose={() => handleRemoveLabel(labelItem.label.id)}
+                    >
                       {labelItem.label.title}
                     </Tag>
                   ))}
@@ -148,13 +311,47 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
                 "No labels"
               )}
             </div>
+
+            {/* Add Label Section */}
+            <Divider style={{ margin: "16px 0 8px 0" }} />
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Select
+                mode="multiple"
+                placeholder="Select labels to add"
+                style={{ flex: 1 }}
+                value={selectedLabelIds}
+                onChange={setSelectedLabelIds}
+                options={
+                  availableLabels
+                    ?.filter(
+                      (label) =>
+                        !localTicket?.labels?.some(
+                          (ticketLabel) => ticketLabel.label.id === label.id
+                        )
+                    )
+                    .map((label) => ({
+                      label: label.title,
+                      value: label.id,
+                    })) || []
+                }
+              />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAddLabels}
+                disabled={selectedLabelIds.length === 0}
+                size="small"
+              >
+                Add
+              </Button>
+            </div>
           </div>
 
           <div style={{ marginBottom: "16px" }}>
             <strong>Created:</strong>
             <div style={{ marginTop: "4px" }}>
-              {ticket?.createdAt
-                ? dayjs(ticket.createdAt).format("YYYY-MM-DD HH:mm")
+              {localTicket?.createdAt
+                ? dayjs(localTicket.createdAt).format("YYYY-MM-DD HH:mm")
                 : "N/A"}
             </div>
           </div>
@@ -162,8 +359,8 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
           <div style={{ marginBottom: "16px" }}>
             <strong>Last Updated:</strong>
             <div style={{ marginTop: "4px" }}>
-              {ticket?.updatedAt
-                ? dayjs(ticket.updatedAt).format("YYYY-MM-DD HH:mm")
+              {localTicket?.updatedAt
+                ? dayjs(localTicket.updatedAt).format("YYYY-MM-DD HH:mm")
                 : "N/A"}
             </div>
           </div>
