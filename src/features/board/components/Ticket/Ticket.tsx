@@ -34,6 +34,8 @@ export interface TicketData {
 interface TicketProps {
   ticket: TicketData;
   onClick?: (ticket: TicketData) => void;
+  onDragStart?: (e: React.DragEvent) => void;
+  isDragging?: boolean;
 }
 
 const tagColors: Record<string, string> = {
@@ -44,7 +46,12 @@ const tagColors: Record<string, string> = {
   low: "green",
 };
 
-const Ticket: React.FC<TicketProps> = ({ ticket, onClick }) => {
+const Ticket: React.FC<TicketProps> = ({
+  ticket,
+  onClick,
+  onDragStart,
+  isDragging,
+}) => {
   const handleClick = () => {
     if (onClick) {
       onClick(ticket);
@@ -53,10 +60,14 @@ const Ticket: React.FC<TicketProps> = ({ ticket, onClick }) => {
 
   return (
     <Card
-      className="mb-6 cursor-pointer hover:shadow-md transition-shadow duration-200"
+      className={`mb-6 cursor-grab hover:shadow-md transition-all duration-200 ${
+        isDragging ? "opacity-50 scale-95 cursor-grabbing" : ""
+      }`}
       size="small"
       bodyStyle={{ padding: "12px" }}
       onClick={handleClick}
+      draggable={true}
+      onDragStart={onDragStart}
     >
       <Title level={5} className="mb-2 text-gray-800 truncate">
         {ticket.title}

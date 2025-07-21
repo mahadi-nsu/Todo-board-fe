@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Card,
   Button,
@@ -43,6 +43,9 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
     useState<number | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
   const [isTicketModalVisible, setIsTicketModalVisible] = useState(false);
+  const [draggedTicket, setDraggedTicket] = useState<TicketData | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
   const { data: allTickets, refetch: refetchTickets } = useGetTicketsQuery();
   const { data: categories } = useGetCategoriesQuery();
   const [deleteCategory, { isLoading: isDeleting }] =
@@ -178,6 +181,100 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
     }
   };
 
+  // Drag and Drop Handlers
+  const handleDragStart = (e: React.DragEvent, ticket: TicketData) => {
+    setDraggedTicket(ticket);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", ticket.id.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    // Try to get ticket data from state or dataTransfer
+    let ticketToMove = draggedTicket;
+
+    if (!ticketToMove) {
+      const ticketId = e.dataTransfer.getData("text/plain");
+
+      if (ticketId) {
+        // Find the ticket in all tickets and convert to TicketData format
+        const foundTicket = allTickets?.find(
+          (t) => t.id.toString() === ticketId
+        );
+        if (foundTicket) {
+          ticketToMove = {
+            id: foundTicket.id,
+            title: foundTicket.title,
+            description: foundTicket.description || "",
+            expiresAt: foundTicket.expiresAt,
+            categoryId: foundTicket.categoryId,
+            createdAt: foundTicket.createdAt,
+            updatedAt: foundTicket.updatedAt,
+            labels: foundTicket.labels,
+            category: foundTicket.category,
+            history: foundTicket.history,
+          };
+        }
+      }
+    }
+
+    if (!ticketToMove) {
+      return;
+    }
+
+    const targetCategoryId = parseInt(label.guid);
+
+    // Don't drop if it's the same category
+    if (ticketToMove.categoryId === targetCategoryId) {
+      message.info("Ticket is already in this category");
+      setDraggedTicket(null);
+      return;
+    }
+
+    try {
+      // Update the ticket's category
+      const updateData = {
+        id: ticketToMove.id,
+        categoryId: targetCategoryId,
+        title: ticketToMove.title,
+        description: ticketToMove.description,
+        expiresAt: ticketToMove.expiresAt,
+      };
+
+      await updateTicket(updateData).unwrap();
+
+      message.success(`Ticket moved to "${label.title}"`);
+      await refetchTickets();
+      onTicketUpdate();
+    } catch (error) {
+      console.error("Move ticket error:", error);
+      const errorMessage =
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Failed to move ticket";
+      message.error(errorMessage);
+    } finally {
+      setDraggedTicket(null);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setIsDragOver(false);
+    setDraggedTicket(null);
+  };
+
   const menuItems = [
     {
       key: "edit",
@@ -225,22 +322,42 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
 
       {/* Tickets List */}
       <div
-        className="flex-1 overflow-y-auto mb-4"
+        ref={dropZoneRef}
+        className={`flex-1 overflow-y-auto mb-4 transition-colors duration-200 ${
+          isDragOver ? "bg-blue-50 border-2 border-dashed border-blue-300" : ""
+        }`}
         style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onDragEnd={handleDragEnd}
       >
         {tickets.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
             <div className="mb-2">No tickets</div>
-            <div className="text-sm">Drop tickets here or add new ones</div>
+            <div className="text-sm">
+              {isDragOver
+                ? "Drop here to move ticket"
+                : "Drop tickets here or add new ones"}
+            </div>
           </div>
         ) : (
-          ticketData.map((ticket) => (
-            <Ticket
-              key={ticket.id}
-              ticket={ticket}
-              onClick={handleTicketClick}
-            />
-          ))
+          <>
+            {isDragOver && (
+              <div className="text-center py-2 text-blue-600 text-sm font-medium">
+                Drop here to move ticket
+              </div>
+            )}
+            {ticketData.map((ticket) => (
+              <Ticket
+                key={ticket.id}
+                ticket={ticket}
+                onClick={handleTicketClick}
+                onDragStart={(e) => handleDragStart(e, ticket)}
+                isDragging={draggedTicket?.id === ticket.id}
+              />
+            ))}
+          </>
         )}
       </div>
 
