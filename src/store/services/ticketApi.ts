@@ -55,6 +55,17 @@ export const ticketApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Ticket"],
     }),
+    addLabelToTicket: builder.mutation<
+      void,
+      { ticketId: number; labelId: number }
+    >({
+      query: ({ ticketId, labelId }) => ({
+        url: `/tickets/${ticketId}/labels`,
+        method: "POST",
+        body: { labelId },
+      }),
+      invalidatesTags: ["Ticket"],
+    }),
   }),
 });
 
@@ -64,4 +75,5 @@ export const {
   useCreateTicketMutation,
   useUpdateTicketMutation,
   useDeleteTicketMutation,
+  useAddLabelToTicketMutation,
 } = ticketApi;

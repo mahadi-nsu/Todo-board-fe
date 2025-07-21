@@ -7,15 +7,20 @@ import {
   useCreateTicketMutation,
   useUpdateTicketMutation,
   useDeleteTicketMutation,
+  useAddLabelToTicketMutation,
 } from "@/store/services/ticketApi";
 import { useGetCategoriesQuery } from "@/store/services/categoryApi";
+import { useGetLabelsQuery } from "@/store/services/labelApi";
 
 const TicketTest: React.FC = () => {
   const { data: tickets, error, isLoading } = useGetTicketsQuery();
   const { data: categories } = useGetCategoriesQuery();
+  const { data: labels } = useGetLabelsQuery();
   const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
+  const [addLabelToTicket, { isLoading: isAddingLabel }] =
+    useAddLabelToTicketMutation();
 
   const [newTicket, setNewTicket] = React.useState({
     title: "",
@@ -105,6 +110,15 @@ const TicketTest: React.FC = () => {
       message.success("Ticket deleted successfully!");
     } catch (error) {
       message.error("Failed to delete ticket");
+    }
+  };
+
+  const handleAddLabelToTicket = async (ticketId: number, labelId: number) => {
+    try {
+      await addLabelToTicket({ ticketId, labelId }).unwrap();
+      message.success("Label added to ticket successfully!");
+    } catch (error) {
+      message.error("Failed to add label to ticket");
     }
   };
 
@@ -343,6 +357,18 @@ const TicketTest: React.FC = () => {
                 >
                   View
                 </Button>
+                <Select
+                  size="small"
+                  placeholder="Add tag"
+                  style={{ width: 120 }}
+                  onChange={(labelId) =>
+                    handleAddLabelToTicket(ticket.id, labelId)
+                  }
+                  options={labels?.map((label) => ({
+                    label: label.title,
+                    value: label.id,
+                  }))}
+                />
               </div>
             </li>
           ))}
