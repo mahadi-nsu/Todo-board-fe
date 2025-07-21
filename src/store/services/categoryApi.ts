@@ -48,6 +48,16 @@ export const categoryApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Category"],
     }),
+    swapCategoryOrder: builder.mutation<
+      void,
+      { id: number; categoryId2: number }
+    >({
+      query: ({ id, categoryId2 }) => ({
+        url: `/categories/${id}/swap-order/${categoryId2}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Category"],
+    }),
   }),
 });
 
@@ -56,4 +66,5 @@ export const {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useSwapCategoryOrderMutation,
 } = categoryApi;

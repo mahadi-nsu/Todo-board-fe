@@ -5,6 +5,7 @@ import {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useSwapCategoryOrderMutation,
 } from "@/store/services/categoryApi";
 
 const CategoryTest: React.FC = () => {
@@ -15,6 +16,8 @@ const CategoryTest: React.FC = () => {
     useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: isDeleting }] =
     useDeleteCategoryMutation();
+  const [swapCategoryOrder, { isLoading: isSwapping }] =
+    useSwapCategoryOrderMutation();
   const [newCategoryTitle, setNewCategoryTitle] = React.useState("");
   const [editingCategory, setEditingCategory] = React.useState<{
     id: number;
@@ -85,6 +88,15 @@ const CategoryTest: React.FC = () => {
       message.success("Category deleted successfully!");
     } catch (error) {
       message.error("Failed to delete category");
+    }
+  };
+
+  const handleSwapOrder = async (categoryId1: number, categoryId2: number) => {
+    try {
+      await swapCategoryOrder({ id: categoryId1, categoryId2 }).unwrap();
+      message.success("Category order swapped successfully!");
+    } catch (error) {
+      message.error("Failed to swap category order");
     }
   };
 
@@ -196,6 +208,22 @@ const CategoryTest: React.FC = () => {
                   >
                     Delete
                   </Button>
+                  {categories && categories.length > 1 && (
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        const nextCategory = categories.find(
+                          (cat) => cat.id !== category.id
+                        );
+                        if (nextCategory) {
+                          handleSwapOrder(category.id, nextCategory.id);
+                        }
+                      }}
+                      loading={isSwapping}
+                    >
+                      Swap
+                    </Button>
+                  )}
                 </div>
               )}
             </li>
