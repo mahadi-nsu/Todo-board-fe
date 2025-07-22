@@ -18,6 +18,7 @@ import {
   useDeleteCategoryMutation,
   useGetCategoriesQuery,
 } from "@/store/services/categoryApi";
+import toast from "react-hot-toast";
 
 interface CategoryProps {
   label: { guid: string; title: string };
@@ -69,9 +70,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
 
   const handleConfirmDelete = async () => {
     if (!selectedDestinationCategory) {
-      message.warning(
-        "Please select a destination category for existing tickets"
-      );
+      toast.error("Please select a destination category for existing tickets");
       return;
     }
 

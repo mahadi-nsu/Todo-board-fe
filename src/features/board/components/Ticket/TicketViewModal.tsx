@@ -42,6 +42,14 @@ import {
 import { useGetLabelsQuery } from "@/store/services/labelApi";
 import { useGetCategoriesQuery } from "@/store/services/categoryApi";
 
+function debounceFn<T extends (...args: any[]) => void>(fn: T, delay: number) {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
 const { TextArea } = Input;
 const { TabPane } = Tabs;
 
@@ -85,19 +93,51 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
     setLocalTicket(ticket);
   }, [ticket]);
 
+  // Draft logic
+  const draftKey = ticket ? `ticket-draft-${ticket.id}` : null;
+  const saveDraft = debounceFn((desc: string) => {
+    if (draftKey) {
+      localStorage.setItem(draftKey, desc);
+    }
+  }, 400);
+
+  // Clear all ticket drafts on browser refresh
+  useEffect(() => {
+    const clearTicketDrafts = () => {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("ticket-draft-")) {
+          localStorage.removeItem(key);
+        }
+      });
+    };
+    window.addEventListener("load", clearTicketDrafts);
+    return () => {
+      window.removeEventListener("load", clearTicketDrafts);
+    };
+  }, []);
+
+  // Load draft on edit start
   const handleEdit = () => {
     setIsEditing(true);
-    setActiveTab("details"); // Switch to details tab when editing
-    // Populate form with current ticket data
+    setActiveTab("details");
     if (ticket) {
+      let description = ticket.description;
+      // Load draft if present
+      if (draftKey) {
+        const draft = localStorage.getItem(draftKey);
+        if (draft !== null) {
+          description = draft;
+        }
+      }
       form.setFieldsValue({
         title: ticket.title,
-        description: ticket.description,
+        description,
         expiresAt: ticket.expiresAt ? dayjs(ticket.expiresAt) : null,
       });
     }
   };
 
+  // On save, clear draft
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
@@ -106,10 +146,11 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
         ...values,
         expiresAt: values.expiresAt ? values.expiresAt.toISOString() : null,
       };
-
       await onUpdate(updatedTicket);
       setIsEditing(false);
       toast.success("Ticket updated successfully!");
+      // Clear draft
+      if (draftKey) localStorage.removeItem(draftKey);
     } catch (error) {
       console.error("Form validation error:", error);
     }
@@ -294,7 +335,15 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   const renderDetailsTab = () => (
     <div style={{ padding: "16px 0" }}>
       {isEditing ? (
-        <Form form={form} layout="vertical">
+        <Form
+          form={form}
+          layout="vertical"
+          onValuesChange={(_, allValues) => {
+            if (allValues.description !== undefined) {
+              saveDraft(allValues.description);
+            }
+          }}
+        >
           <Form.Item
             name="title"
             label="Title"

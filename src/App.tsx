@@ -8,8 +8,22 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import Layout from "./components/common/Layout";
 import AuthRedirect from "./components/common/AuthRedirect";
 import { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
 
 function App() {
+  useEffect(() => {
+    const clearTicketDrafts = () => {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("ticket-draft-")) {
+          localStorage.removeItem(key);
+        }
+      });
+    };
+    window.addEventListener("load", clearTicketDrafts);
+    return () => {
+      window.removeEventListener("load", clearTicketDrafts);
+    };
+  }, []);
   return (
     <>
       <BrowserRouter>
