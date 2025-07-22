@@ -1,32 +1,42 @@
-import { Form, Button, Card, Input, message } from "antd";
+import { Form, Button, Card, Input } from "antd";
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import {
   emailRules,
   passwordRules,
   nameRules,
   confirmPasswordRules,
 } from "../utils/validationRules";
+import { parseRegisterError } from "../utils/errorUtils";
 import AuthBanner from "@/components/common/AuthBanner";
 import PageTransition from "@/components/common/PageTransition";
+import ErrorAlert from "@/components/common/ErrorAlert";
 import {
   useRegisterMutation,
   useLoginMutation,
 } from "@/store/services/authApi";
-import type { IRegisterFormValues } from "../types";
+import type { IRegisterFormValues, IRegisterError } from "../types";
 
 const Register = () => {
   const navigate = useNavigate();
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [form] = Form.useForm();
+  const [error, setError] = useState<IRegisterError | null>(null);
 
   const onFinish = async (values: IRegisterFormValues) => {
     try {
+      // Clear any previous errors
+      setError(null);
+
       // Remove confirmPassword before sending to API
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...registerData } = values;
 
       // Register the user
       await register(registerData).unwrap();
-      message.success("Registration successful!");
+      toast.success("Registration successful!");
 
       // Automatically log in the user
       const loginResult = await login({
@@ -40,12 +50,28 @@ const Register = () => {
       // Navigate to board
       navigate("/board");
     } catch (error) {
-      const errorMessage =
-        (error as any)?.data?.message ||
-        (error as any)?.message ||
-        "Registration failed. Please try again.";
+      const parsedError = parseRegisterError(error);
+      setError(parsedError);
 
-      message.error(errorMessage);
+      // Show error message in toast as well
+      toast.error(parsedError.message);
+
+      // If it's a field-specific error, focus on that field
+      if (parsedError.field) {
+        form.setFields([
+          {
+            name: parsedError.field,
+            errors: [parsedError.message],
+          },
+        ]);
+      }
+    }
+  };
+
+  const onValuesChange = () => {
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
     }
   };
 
@@ -55,10 +81,16 @@ const Register = () => {
         <Card className="w-full max-w-md" bordered>
           <AuthBanner />
           <h2 className="text-xl font-semibold text-center mb-6">Register</h2>
+
+          {/* Error Alert */}
+          <ErrorAlert error={error} onClose={() => setError(null)} />
+
           <Form
+            form={form}
             name="register"
             layout="vertical"
             onFinish={onFinish}
+            onValuesChange={onValuesChange}
             autoComplete="off"
             requiredMark={false}
           >
@@ -70,7 +102,10 @@ const Register = () => {
                 marginBottom: "12px",
               }}
             >
-              <Input placeholder="Enter your name" />
+              <Input
+                placeholder="Enter your name"
+                status={error?.field === "name" ? "error" : undefined}
+              />
             </Form.Item>
 
             <Form.Item
@@ -81,7 +116,10 @@ const Register = () => {
                 marginBottom: "12px",
               }}
             >
-              <Input placeholder="Enter your email" />
+              <Input
+                placeholder="Enter your email"
+                status={error?.field === "email" ? "error" : undefined}
+              />
             </Form.Item>
 
             <Form.Item
@@ -92,7 +130,10 @@ const Register = () => {
                 marginBottom: "12px",
               }}
             >
-              <Input.Password placeholder="Enter your password" />
+              <Input.Password
+                placeholder="Enter your password"
+                status={error?.field === "password" ? "error" : undefined}
+              />
             </Form.Item>
 
             <Form.Item
@@ -100,7 +141,12 @@ const Register = () => {
               name="confirmPassword"
               rules={confirmPasswordRules}
             >
-              <Input.Password placeholder="Confirm your password" />
+              <Input.Password
+                placeholder="Confirm your password"
+                status={
+                  error?.field === "confirmPassword" ? "error" : undefined
+                }
+              />
             </Form.Item>
 
             <Form.Item>

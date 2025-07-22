@@ -1,34 +1,59 @@
-import { Form, Button, Card, Input, message } from "antd";
+import { Form, Button, Card, Input } from "antd";
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import { emailRules, passwordRules } from "../utils/validationRules";
+import { parseLoginError } from "../utils/errorUtils";
 import AuthBanner from "@/components/common/AuthBanner";
 import PageTransition from "@/components/common/PageTransition";
+import ErrorAlert from "@/components/common/ErrorAlert";
 import { useLoginMutation } from "@/store/services/authApi";
-import type { ILoginFormValues } from "../types";
+import type { ILoginFormValues, ILoginError } from "../types";
 
 const Login = () => {
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
+  const [form] = Form.useForm();
+  const [error, setError] = useState<ILoginError | null>(null);
 
   const onFinish = async (values: ILoginFormValues) => {
     try {
+      // Clear any previous errors
+      setError(null);
+
       const result = await login(values).unwrap();
 
       // Save token to localStorage
       localStorage.setItem("accessToken", result.accessToken);
 
       // Show success message
-      message.success("Login successful!");
+      toast.success("Login successful!");
 
       // Navigate to board
       navigate("/board");
     } catch (error) {
-      const errorMessage =
-        (error as any)?.data?.message ||
-        (error as any)?.message ||
-        "Login failed. Please try again.";
+      const parsedError = parseLoginError(error);
+      setError(parsedError);
 
-      message.error(errorMessage);
+      // Show error message in toast as well
+      toast.error(parsedError.message);
+
+      // If it's a field-specific error, focus on that field
+      if (parsedError.field) {
+        form.setFields([
+          {
+            name: parsedError.field,
+            errors: [parsedError.message],
+          },
+        ]);
+      }
+    }
+  };
+
+  const onValuesChange = () => {
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
     }
   };
 
@@ -38,10 +63,16 @@ const Login = () => {
         <Card className="w-full max-w-md" bordered>
           <AuthBanner />
           <h2 className="text-xl font-semibold text-center mb-6">Login</h2>
+
+          {/* Error Alert */}
+          <ErrorAlert error={error} onClose={() => setError(null)} />
+
           <Form
+            form={form}
             name="login"
             layout="vertical"
             onFinish={onFinish}
+            onValuesChange={onValuesChange}
             autoComplete="off"
             requiredMark={false}
           >
@@ -53,11 +84,17 @@ const Login = () => {
                 marginBottom: "12px",
               }}
             >
-              <Input placeholder="Enter your email" />
+              <Input
+                placeholder="Enter your email"
+                status={error?.field === "email" ? "error" : undefined}
+              />
             </Form.Item>
 
             <Form.Item label="Password" name="password" rules={passwordRules}>
-              <Input.Password placeholder="Enter your password" />
+              <Input.Password
+                placeholder="Enter your password"
+                status={error?.field === "password" ? "error" : undefined}
+              />
             </Form.Item>
 
             <Form.Item>
