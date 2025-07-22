@@ -88,8 +88,8 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
     try {
       console.log("Attempting to delete category:", parseInt(label.guid));
       await deleteCategory({
-        id: parseInt(label.guid),
-        moveExistingTicketsToCategoryId: selectedDestinationCategory,
+        id: label.guid,
+        moveExistingTicketsToCategoryId: selectedDestinationCategory.toString(),
       }).unwrap();
       message.success("Category deleted successfully!");
       setIsDeleteModalVisible(false);

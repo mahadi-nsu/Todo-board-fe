@@ -40,7 +40,7 @@ export const categoryApi = api.injectEndpoints({
     }),
     deleteCategory: builder.mutation<
       void,
-      { id: number; moveExistingTicketsToCategoryId: number }
+      { id: string; moveExistingTicketsToCategoryId: string }
     >({
       query: ({ id, moveExistingTicketsToCategoryId }) => ({
         url: `/categories/${id}?moveExistingTicketsToCategoryId=${moveExistingTicketsToCategoryId}`,
