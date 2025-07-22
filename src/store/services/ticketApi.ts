@@ -52,10 +52,7 @@ export const ticketApi = api.injectEndpoints({
       query: (id) => `/tickets/get/${id}`,
       providesTags: (result, error, id) => [{ type: "Ticket", id }],
     }),
-    getTicketHistory: builder.query<Ticket[], void>({
-      query: () => "/tickets/history",
-      providesTags: ["Ticket"],
-    }),
+
     createTicket: builder.mutation<Ticket, CreateTicketRequest>({
       query: (ticketData) => ({
         url: "/tickets",
@@ -115,7 +112,6 @@ export const ticketApi = api.injectEndpoints({
 export const {
   useGetTicketsQuery,
   useGetTicketQuery,
-  useGetTicketHistoryQuery,
   useCreateTicketMutation,
   useUpdateTicketMutation,
   useDeleteTicketMutation,

@@ -1,9 +1,30 @@
-html, body, #root {
+html,
+body,
+#root {
   width: 100vw;
   height: 100vh;
   margin: 0;
   padding: 0;
 }
 
+/* Ticket History Timeline Styles */
+.ticket-history-timeline .ant-timeline-item {
+  padding-bottom: 0;
+}
 
+.ticket-history-timeline .ant-timeline-item-content {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
 
+.ticket-history-timeline .ant-timeline-item-tail {
+  display: none;
+}
+
+.ticket-history-timeline .ant-timeline-item-head {
+  display: none;
+}
+
+.ticket-history-timeline .ant-timeline-item-label {
+  display: none;
+}
