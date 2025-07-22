@@ -52,6 +52,7 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   onLabelUpdate,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
   const [form] = Form.useForm();
   const [selectedLabelIds, setSelectedLabelIds] = useState<number[]>([]);
   const [localTicket, setLocalTicket] = useState<TicketData | null>(null);
@@ -73,6 +74,7 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
 
   const handleEdit = () => {
     setIsEditing(true);
+    setActiveTab("details"); // Switch to details tab when editing
     // Populate form with current ticket data
     if (ticket) {
       form.setFieldsValue({
@@ -690,7 +692,11 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
       }
       width={900}
     >
-      <Tabs defaultActiveKey="details">
+      <Tabs
+        defaultActiveKey="details"
+        activeKey={activeTab}
+        onChange={setActiveTab}
+      >
         <TabPane tab="Details" key="details">
           {renderDetailsTab()}
         </TabPane>
