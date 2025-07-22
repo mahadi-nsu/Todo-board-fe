@@ -14,6 +14,7 @@ import {
   Popconfirm,
   Card,
   Descriptions,
+  Dropdown,
 } from "antd";
 import toast from "react-hot-toast";
 import {
@@ -28,6 +29,7 @@ import {
   FolderOutlined,
   ClockCircleOutlined,
   UserOutlined,
+  SwapOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { TicketData } from "./Ticket";
@@ -35,8 +37,10 @@ import {
   useGetTicketQuery,
   useAddLabelToTicketMutation,
   useRemoveLabelFromTicketMutation,
+  useUpdateTicketMutation,
 } from "@/store/services/ticketApi";
 import { useGetLabelsQuery } from "@/store/services/labelApi";
+import { useGetCategoriesQuery } from "@/store/services/categoryApi";
 
 const { TextArea } = Input;
 const { TabPane } = Tabs;
@@ -71,8 +75,10 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
     skip: !ticket?.id,
   });
   const { data: availableLabels } = useGetLabelsQuery();
+  const { data: availableCategories } = useGetCategoriesQuery();
   const [addLabelToTicket] = useAddLabelToTicketMutation();
   const [removeLabelFromTicket] = useRemoveLabelFromTicketMutation();
+  const [updateTicket] = useUpdateTicketMutation();
 
   // Sync local ticket state with prop
   useEffect(() => {
@@ -112,6 +118,39 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   const handleCancel = () => {
     setIsEditing(false);
     form.resetFields();
+  };
+
+  const handleMoveTicket = async (targetCategoryId: number) => {
+    if (!localTicket) return;
+
+    try {
+      await updateTicket({
+        id: localTicket.id,
+        categoryId: targetCategoryId,
+      }).unwrap();
+
+      toast.success("Ticket moved successfully!");
+      onClose(); // Close the modal after successful movement
+    } catch (error) {
+      console.error("Move ticket error:", error);
+      let errorMessage = "Failed to move ticket";
+
+      if (error && typeof error === "object") {
+        const errorData = (error as { data?: { message?: string } }).data;
+        const errorStatus = (error as { status?: number }).status;
+        const errorMessageProp = (error as { message?: string }).message;
+
+        if (errorData?.message) {
+          errorMessage = errorData.message;
+        } else if (errorStatus) {
+          errorMessage = `Server error: ${errorStatus}`;
+        } else if (errorMessageProp) {
+          errorMessage = errorMessageProp;
+        }
+      }
+
+      toast.error(errorMessage);
+    }
   };
 
   const handleAddLabels = async () => {
@@ -754,9 +793,35 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
                 size="small"
                 icon={<EditOutlined />}
                 onClick={handleEdit}
+                className="modal-action-btn"
               >
-                Edit
+                <span className="btn-text">Edit</span>
               </Button>
+              <Dropdown
+                menu={{
+                  items:
+                    availableCategories
+                      ?.filter(
+                        (category) => category.id !== localTicket?.categoryId
+                      )
+                      .map((category) => ({
+                        key: category.id,
+                        label: category.title,
+                        onClick: () => handleMoveTicket(category.id),
+                      })) || [],
+                }}
+                placement="bottomRight"
+                trigger={["click"]}
+              >
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<SwapOutlined />}
+                  className="modal-action-btn"
+                >
+                  <span className="btn-text">MoveTo</span>
+                </Button>
+              </Dropdown>
               {onDelete && (
                 <Popconfirm
                   title="Are you sure you want to delete this ticket?"
@@ -771,8 +836,9 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
                     size="small"
                     danger
                     icon={<DeleteOutlined />}
+                    className="modal-action-btn"
                   >
-                    Delete
+                    <span className="btn-text">Delete</span>
                   </Button>
                 </Popconfirm>
               )}

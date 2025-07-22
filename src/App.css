@@ -28,3 +28,15 @@ body,
 .ticket-history-timeline .ant-timeline-item-label {
   display: none;
 }
+
+/* Modal Action Buttons Responsive Styles */
+@media (max-width: 768px) {
+  .modal-action-btn .btn-text {
+    display: none;
+  }
+
+  .modal-action-btn {
+    min-width: 32px !important;
+    padding: 4px 8px !important;
+  }
+}
