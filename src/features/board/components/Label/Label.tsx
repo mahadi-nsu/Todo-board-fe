@@ -8,6 +8,7 @@ import {
   message,
   Modal,
   Select,
+  Popconfirm,
 } from "antd";
 import {
   MoreOutlined,
@@ -168,15 +169,19 @@ const Label: React.FC<LabelProps> = ({ label, onTicketUpdate }) => {
   };
 
   const handleDeleteTicket = async () => {
-    if (!selectedTicket) return;
+    if (!selectedTicket) {
+      return;
+    }
+
+    // Close the modal immediately to prevent getTicket query from running
+    setIsTicketModalVisible(false);
+    setSelectedTicket(null);
 
     try {
       const ticketId = selectedTicket.id;
       await deleteTicket(ticketId).unwrap();
       message.success("Ticket deleted successfully!");
       await refetchTickets(); // Refetch tickets to get updated data
-      setIsTicketModalVisible(false);
-      setSelectedTicket(null);
       onTicketUpdate();
     } catch (error) {
       console.error("Delete ticket error:", error);

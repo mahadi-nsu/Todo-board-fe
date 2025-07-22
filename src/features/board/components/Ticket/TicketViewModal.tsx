@@ -11,6 +11,7 @@ import {
   Select,
   Divider,
   Timeline,
+  Popconfirm,
 } from "antd";
 import toast from "react-hot-toast";
 import {
@@ -651,15 +652,23 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
                 Edit
               </Button>
               {onDelete && (
-                <Button
-                  type="text"
-                  size="small"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={onDelete}
+                <Popconfirm
+                  title="Are you sure you want to delete this ticket?"
+                  onConfirm={() => {
+                    onDelete();
+                  }}
+                  okText="Yes"
+                  cancelText="No"
                 >
-                  Delete
-                </Button>
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                  >
+                    Delete
+                  </Button>
+                </Popconfirm>
               )}
             </Space>
           )}
