@@ -18,7 +18,6 @@ import {
 } from "@/store/services/labelApi";
 import AddNewLabel from "./AddNewLabel";
 import toast from "react-hot-toast";
-import dayjs from "dayjs";
 
 const { Search } = Input;
 
@@ -123,18 +122,6 @@ const LabelManagement: React.FC<LabelManagementProps> = ({
       },
     },
     {
-      title: "Created",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date: string) => dayjs(date).format("YYYY-MM-DD HH:mm"),
-    },
-    {
-      title: "Updated",
-      dataIndex: "updatedAt",
-      key: "updatedAt",
-      render: (date: string) => dayjs(date).format("YYYY-MM-DD HH:mm"),
-    },
-    {
       title: "Actions",
       key: "actions",
       render: (_: unknown, record: Label) => {
@@ -190,7 +177,7 @@ const LabelManagement: React.FC<LabelManagementProps> = ({
         open={visible}
         onCancel={onClose}
         footer={null}
-        width={800}
+        width={600}
         destroyOnClose
       >
         <div className="mb-4 flex items-center gap-3">
@@ -210,19 +197,16 @@ const LabelManagement: React.FC<LabelManagementProps> = ({
           </Button>
         </div>
 
-        <Table
-          columns={columns}
-          dataSource={filteredLabels}
-          loading={isLoading}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} labels`,
-          }}
-        />
+        <div style={{ overflow: "hidden" }}>
+          <Table
+            columns={columns}
+            dataSource={filteredLabels}
+            loading={isLoading}
+            rowKey="id"
+            pagination={false}
+            scroll={{ y: 350 }}
+          />
+        </div>
       </Modal>
 
       <AddNewLabel
