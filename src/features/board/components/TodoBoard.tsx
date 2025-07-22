@@ -1,21 +1,20 @@
 import PageTransition from "@/components/common/PageTransition";
 import { Button, Space } from "antd";
 import { PlusOutlined, TagsOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
-import AddNewLabel from "@/features/board/components/Label/AddNewLabel";
-import LabelManagement from "@/features/board/components/Label/LabelManagement";
-import Label from "@/features/board/components/Label/Label";
+import { useState } from "react";
+import { AddNewCategory, Category } from "@/features/board/components/Category";
+import { LabelManagement } from "@/features/board/components/Label";
 import { useGetCategoriesQuery } from "@/store/services/categoryApi";
 
 const TodoBoard = () => {
-  const [isAddLabelVisible, setIsAddLabelVisible] = useState(false);
+  const [isAddCategoryVisible, setIsAddCategoryVisible] = useState(false);
   const [isLabelManagementVisible, setIsLabelManagementVisible] =
     useState(false);
   const { data: categories, error, isLoading } = useGetCategoriesQuery();
 
-  const handleAddLabel = () => setIsAddLabelVisible(true);
-  const handleAddLabelSuccess = () => setIsAddLabelVisible(false);
-  const handleAddLabelCancel = () => setIsAddLabelVisible(false);
+  const handleAddCategory = () => setIsAddCategoryVisible(true);
+  const handleAddCategorySuccess = () => setIsAddCategoryVisible(false);
+  const handleAddCategoryCancel = () => setIsAddCategoryVisible(false);
 
   const handleLabelManagement = () => setIsLabelManagementVisible(true);
   const handleLabelManagementClose = () => setIsLabelManagementVisible(false);
@@ -56,7 +55,7 @@ const TodoBoard = () => {
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
-                onClick={handleAddLabel}
+                onClick={handleAddCategory}
               >
                 Add Category
               </Button>
@@ -70,7 +69,7 @@ const TodoBoard = () => {
                   key={category.id}
                   className="min-w-[320px] max-w-xs flex-shrink-0"
                 >
-                  <Label
+                  <Category
                     label={{
                       guid: category.id.toString(),
                       title: category.title,
@@ -82,10 +81,10 @@ const TodoBoard = () => {
             </div>
           </div>
         </div>
-        <AddNewLabel
-          visible={isAddLabelVisible}
-          onSuccess={handleAddLabelSuccess}
-          onCancel={handleAddLabelCancel}
+        <AddNewCategory
+          visible={isAddCategoryVisible}
+          onSuccess={handleAddCategorySuccess}
+          onCancel={handleAddCategoryCancel}
         />
         <LabelManagement
           visible={isLabelManagementVisible}
