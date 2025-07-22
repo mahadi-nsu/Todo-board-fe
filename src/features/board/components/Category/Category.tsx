@@ -45,7 +45,8 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const { data: allTickets, refetch: refetchTickets } = useGetTicketsQuery();
-  const { data: categories } = useGetCategoriesQuery();
+  const { data: categories, refetch: refetchCategories } =
+    useGetCategoriesQuery();
   const [deleteCategory, { isLoading: isDeleting }] =
     useDeleteCategoryMutation();
   const [updateTicket] = useUpdateTicketMutation();
@@ -83,20 +84,59 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       return;
     }
 
+    // Check if the selected destination is the same as the current category
+    if (selectedDestinationCategory === parseInt(label.guid)) {
+      message.warning("Please select a different category as the destination");
+      return;
+    }
+
     try {
       console.log("Attempting to delete category:", parseInt(label.guid));
-      await deleteCategory({
+      console.log(
+        "Selected destination category:",
+        selectedDestinationCategory
+      );
+      console.log(
+        "Selected destination category (string):",
+        selectedDestinationCategory.toString()
+      );
+
+      const deleteParams = {
         id: label.guid,
         moveExistingTicketsToCategoryId: selectedDestinationCategory.toString(),
-      }).unwrap();
+      };
+      console.log("Delete parameters:", deleteParams);
+
+      await deleteCategory(deleteParams).unwrap();
       message.success("Category deleted successfully!");
       setIsDeleteModalVisible(false);
       setSelectedDestinationCategory(null);
+
+      // Small delay to ensure API has processed the deletion
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Refresh ticket data to show moved tickets immediately
+      await refetchTickets();
+      await refetchCategories();
+      onTicketUpdate();
     } catch (error) {
       console.error("Delete category error:", error);
-      const errorMessage =
-        (error as { data?: { message?: string } })?.data?.message ||
-        "Failed to delete category";
+      console.error("Error details:", JSON.stringify(error, null, 2));
+
+      let errorMessage = "Failed to delete category";
+      if (error && typeof error === "object") {
+        if (
+          "data" in error &&
+          error.data &&
+          typeof error.data === "object" &&
+          "message" in error.data
+        ) {
+          errorMessage = (error.data as { message: string }).message;
+        } else if ("status" in error) {
+          errorMessage = `HTTP ${error.status}: ${errorMessage}`;
+        }
+      }
+
       message.error(errorMessage);
     }
   };

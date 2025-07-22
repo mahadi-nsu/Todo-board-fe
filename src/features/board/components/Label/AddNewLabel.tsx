@@ -32,7 +32,6 @@ const AddNewLabel: React.FC<AddNewLabelProps> = ({
       await createLabel({
         title: values.title.trim(),
       }).unwrap();
-      toast.success("Label created successfully!");
       form.resetFields();
       onSuccess();
     } catch (error) {
