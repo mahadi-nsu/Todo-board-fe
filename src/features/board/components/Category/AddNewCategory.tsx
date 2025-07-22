@@ -73,7 +73,8 @@ const AddNewCategory: React.FC<AddNewCategoryProps> = ({
       open={visible}
       onCancel={handleModalCancel}
       footer={null}
-      width={500}
+      width="90%"
+      style={{ maxWidth: 500 }}
       destroyOnClose
     >
       <Form
@@ -104,11 +105,13 @@ const AddNewCategory: React.FC<AddNewCategoryProps> = ({
           />
         </Form.Item>
 
-        <div className="flex justify-end space-x-2 mt-6 gap-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-6">
           <Button
             icon={<CloseOutlined />}
             onClick={handleCancel}
             disabled={isLoading}
+            className="w-full sm:w-auto"
+            size="large"
           >
             Cancel
           </Button>
@@ -117,6 +120,8 @@ const AddNewCategory: React.FC<AddNewCategoryProps> = ({
             icon={<SaveOutlined />}
             htmlType="submit"
             loading={isLoading}
+            className="w-full sm:w-auto"
+            size="large"
           >
             Create Category
           </Button>

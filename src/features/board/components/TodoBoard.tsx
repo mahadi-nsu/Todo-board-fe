@@ -1,5 +1,5 @@
 import PageTransition from "@/components/common/PageTransition";
-import { Button, Space } from "antd";
+import { Button } from "antd";
 import { PlusOutlined, TagsOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { AddNewCategory, Category } from "@/features/board/components/Category";
@@ -45,29 +45,42 @@ const TodoBoard = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Task Board</h1>
-            <Space>
-              <Button icon={<TagsOutlined />} onClick={handleLabelManagement}>
-                Manage Labels
+        <div className="container mx-auto px-4 py-4 sm:py-8">
+          {/* Mobile-friendly header */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Task Board
+            </h1>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button
+                icon={<TagsOutlined />}
+                onClick={handleLabelManagement}
+                className="w-full sm:w-auto"
+                size="large"
+              >
+                <span className="hidden sm:inline">Manage Labels</span>
+                <span className="sm:hidden">Labels</span>
               </Button>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={handleAddCategory}
+                className="w-full sm:w-auto"
+                size="large"
               >
-                Add Category
+                <span className="hidden sm:inline">Add Category</span>
+                <span className="sm:hidden">Add</span>
               </Button>
-            </Space>
+            </div>
           </div>
-          {/* Board Content with horizontal scroll */}
-          <div className="overflow-x-auto pb-4">
-            <div className="flex flex-row gap-4 min-w-max">
+
+          {/* Mobile-friendly board content */}
+          <div className="overflow-x-auto pb-4 -mx-4 sm:mx-0">
+            <div className="flex flex-col sm:flex-row gap-4 min-w-max px-4 sm:px-0">
               {categories?.map((category) => (
                 <div
                   key={category.id}
-                  className="min-w-[320px] max-w-xs flex-shrink-0"
+                  className="w-full sm:min-w-[320px] sm:max-w-xs flex-shrink-0"
                 >
                   <Category
                     label={{

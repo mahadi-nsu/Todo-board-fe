@@ -177,21 +177,24 @@ const LabelManagement: React.FC<LabelManagementProps> = ({
         open={visible}
         onCancel={onClose}
         footer={null}
-        width={600}
+        width="95%"
+        style={{ maxWidth: 600 }}
         destroyOnClose
       >
-        <div className="mb-4 flex items-center gap-3">
+        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <Search
             placeholder="Search labels..."
             allowClear
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300 }}
+            className="w-full sm:w-80"
           />
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setIsAddModalVisible(true)}
+            className="w-full sm:w-auto"
+            size="large"
           >
             Add Label
           </Button>

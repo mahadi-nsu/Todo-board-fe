@@ -1,14 +1,5 @@
 import React, { useState, useRef } from "react";
-import {
-  Card,
-  Button,
-  Space,
-  Badge,
-  Dropdown,
-  message,
-  Modal,
-  Select,
-} from "antd";
+import { Card, Button, Badge, Dropdown, message, Modal, Select } from "antd";
 import {
   MoreOutlined,
   PlusOutlined,
@@ -342,17 +333,17 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   return (
     <Card
       id={`category-${label.guid}`}
-      className="h-full min-h-[500px] flex flex-col"
+      className="h-full min-h-[400px] sm:min-h-[500px] flex flex-col"
       bodyStyle={{
-        padding: "12px",
+        padding: "8px sm:12px",
         height: "100%",
         display: "flex",
         flexDirection: "column",
       }}
     >
       {/* Category Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex-1">
+      <div className="flex justify-between items-center mb-3 sm:mb-4">
+        <div className="flex-1 min-w-0">
           <CategoryTitle
             label={label}
             onSuccess={() => setIsEditingTitle(false)}
@@ -360,12 +351,12 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
             forceEdit={isEditingTitle}
           />
         </div>
-        <Space>
-          <Badge count={ticketData.length} showZero />
+        <div className="flex items-center gap-2">
+          <Badge count={ticketData.length} showZero size="small" />
           <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
             <Button type="text" icon={<MoreOutlined />} size="small" />
           </Dropdown>
-        </Space>
+        </div>
       </div>
 
       {/* Tickets List */}
@@ -381,9 +372,9 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
         onDragEnd={handleDragEnd}
       >
         {tickets.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
-            <div className="mb-2">No tickets</div>
-            <div className="text-sm">
+          <div className="text-center py-6 sm:py-8 text-gray-400">
+            <div className="mb-2 text-sm sm:text-base">No tickets</div>
+            <div className="text-xs sm:text-sm">
               {isDragOver
                 ? "Drop here to move ticket"
                 : "Drop tickets here or add new ones"}
@@ -415,10 +406,11 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
           type="dashed"
           icon={<PlusOutlined />}
           className="w-full"
-          size="small"
+          size="middle"
           onClick={() => setIsAddTicketVisible(true)}
         >
-          Add Ticket
+          <span className="hidden sm:inline">Add Ticket</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 
