@@ -46,7 +46,7 @@ export const categoryApi = api.injectEndpoints({
         url: `/categories/${id}?moveExistingTicketsToCategoryId=${moveExistingTicketsToCategoryId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Category"],
+      invalidatesTags: ["Category", "Ticket"],
     }),
     swapCategoryOrder: builder.mutation<
       void,
