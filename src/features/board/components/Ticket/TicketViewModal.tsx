@@ -12,6 +12,8 @@ import {
   Divider,
   Timeline,
   Popconfirm,
+  Card,
+  Descriptions,
 } from "antd";
 import toast from "react-hot-toast";
 import {
@@ -21,6 +23,11 @@ import {
   DeleteOutlined,
   PlusOutlined,
   ArrowRightOutlined,
+  CalendarOutlined,
+  TagOutlined,
+  FolderOutlined,
+  ClockCircleOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { TicketData } from "./Ticket";
@@ -271,105 +278,202 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
         </Form>
       ) : (
         <div>
-          <div style={{ marginBottom: "16px" }}>
-            <strong>Title:</strong>
-            <div style={{ marginTop: "4px" }}>{localTicket?.title}</div>
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
-            <strong>Description:</strong>
-            <div style={{ marginTop: "4px" }}>{localTicket?.description}</div>
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
-            <strong>Expires At:</strong>
-            <div style={{ marginTop: "4px" }}>
-              {localTicket?.expiresAt
-                ? dayjs(localTicket.expiresAt).format("YYYY-MM-DD HH:mm")
-                : "Not set"}
-            </div>
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
-            <strong>Category:</strong>
-            <div style={{ marginTop: "4px" }}>
-              {localTicket?.category?.title || "Not assigned"}
-            </div>
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
-            <strong>Labels:</strong>
-            <div style={{ marginTop: "4px" }}>
-              {localTicket?.labels && localTicket.labels.length > 0 ? (
-                <Space size="small">
-                  {localTicket.labels.map((labelItem) => (
-                    <Tag
-                      key={labelItem.label.id}
-                      color="blue"
-                      closable
-                      onClose={() => handleRemoveLabel(labelItem.label.id)}
-                    >
-                      {labelItem.label.title}
-                    </Tag>
-                  ))}
-                </Space>
-              ) : (
-                "No labels"
-              )}
-            </div>
-
-            {/* Add Label Section */}
-            <Divider style={{ margin: "16px 0 8px 0" }} />
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <Select
-                mode="multiple"
-                placeholder="Select labels to add"
-                style={{ flex: 1 }}
-                value={selectedLabelIds}
-                onChange={setSelectedLabelIds}
-                options={
-                  availableLabels
-                    ?.filter(
-                      (label) =>
-                        !localTicket?.labels?.some(
-                          (ticketLabel) => ticketLabel.label.id === label.id
-                        )
-                    )
-                    .map((label) => ({
-                      label: label.title,
-                      value: label.id,
-                    })) || []
+          {/* Main Ticket Information Card */}
+          <Card
+            title={
+              <Space>
+                <UserOutlined style={{ color: "#1890ff" }} />
+                <span>Ticket Information</span>
+              </Space>
+            }
+            style={{ marginBottom: "16px" }}
+            size="small"
+          >
+            <Descriptions column={1} size="small">
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <UserOutlined style={{ color: "#666" }} />
+                    <span>Title</span>
+                  </Space>
                 }
-              />
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleAddLabels}
-                disabled={selectedLabelIds.length === 0}
-                size="small"
               >
-                Add
-              </Button>
-            </div>
-          </div>
+                <div style={{ fontWeight: 500, color: "#262626" }}>
+                  {localTicket?.title}
+                </div>
+              </Descriptions.Item>
 
-          <div style={{ marginBottom: "16px" }}>
-            <strong>Created:</strong>
-            <div style={{ marginTop: "4px" }}>
-              {localTicket?.createdAt
-                ? dayjs(localTicket.createdAt).format("YYYY-MM-DD HH:mm")
-                : "N/A"}
-            </div>
-          </div>
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <EditOutlined style={{ color: "#666" }} />
+                    <span>Description</span>
+                  </Space>
+                }
+              >
+                <div style={{ color: "#595959", lineHeight: "1.5" }}>
+                  {localTicket?.description}
+                </div>
+              </Descriptions.Item>
 
-          <div style={{ marginBottom: "16px" }}>
-            <strong>Last Updated:</strong>
-            <div style={{ marginTop: "4px" }}>
-              {localTicket?.updatedAt
-                ? dayjs(localTicket.updatedAt).format("YYYY-MM-DD HH:mm")
-                : "N/A"}
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <CalendarOutlined style={{ color: "#666" }} />
+                    <span>Expires At</span>
+                  </Space>
+                }
+              >
+                <div style={{ color: "#595959" }}>
+                  {localTicket?.expiresAt ? (
+                    dayjs(localTicket.expiresAt).format("YYYY-MM-DD HH:mm")
+                  ) : (
+                    <span style={{ color: "#bfbfbf" }}>Not set</span>
+                  )}
+                </div>
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+
+          {/* Category and Labels Card */}
+          <Card
+            title={
+              <Space>
+                <FolderOutlined style={{ color: "#52c41a" }} />
+                <span>Classification</span>
+              </Space>
+            }
+            style={{ marginBottom: "16px" }}
+            size="small"
+          >
+            <Descriptions column={1} size="small">
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <FolderOutlined style={{ color: "#666" }} />
+                    <span>Category</span>
+                  </Space>
+                }
+              >
+                <Tag color="green" style={{ margin: 0 }}>
+                  {localTicket?.category?.title || "Not assigned"}
+                </Tag>
+              </Descriptions.Item>
+            </Descriptions>
+
+            {/* Labels Section - Separate from Descriptions */}
+            <div style={{ marginTop: "16px" }}>
+              <div
+                style={{
+                  marginBottom: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <TagOutlined style={{ color: "#666" }} />
+                <span>Labels</span>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                {localTicket?.labels && localTicket.labels.length > 0 ? (
+                  <Space size="small" wrap>
+                    {localTicket.labels.map((labelItem) => (
+                      <Tag
+                        key={labelItem.label.id}
+                        color="blue"
+                        closable
+                        onClose={() => handleRemoveLabel(labelItem.label.id)}
+                      >
+                        {labelItem.label.title}
+                      </Tag>
+                    ))}
+                  </Space>
+                ) : (
+                  <span style={{ color: "#bfbfbf" }}>No labels</span>
+                )}
+              </div>
+
+              {/* Add Label Section */}
+              <Divider style={{ margin: "12px 0" }} />
+              <div
+                style={{ display: "flex", gap: "8px", alignItems: "center" }}
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Select labels to add"
+                  style={{ flex: 1 }}
+                  value={selectedLabelIds}
+                  onChange={setSelectedLabelIds}
+                  options={
+                    availableLabels
+                      ?.filter(
+                        (label) =>
+                          !localTicket?.labels?.some(
+                            (ticketLabel) => ticketLabel.label.id === label.id
+                          )
+                      )
+                      .map((label) => ({
+                        label: label.title,
+                        value: label.id,
+                      })) || []
+                  }
+                />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddLabels}
+                  disabled={selectedLabelIds.length === 0}
+                  size="middle"
+                >
+                  Add
+                </Button>
+              </div>
             </div>
-          </div>
+          </Card>
+
+          {/* Metadata Card */}
+          <Card
+            title={
+              <Space>
+                <ClockCircleOutlined style={{ color: "#722ed1" }} />
+                <span>Metadata</span>
+              </Space>
+            }
+            size="small"
+          >
+            <Descriptions column={1} size="small">
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <ClockCircleOutlined style={{ color: "#666" }} />
+                    <span>Created</span>
+                  </Space>
+                }
+              >
+                <div style={{ color: "#595959" }}>
+                  {localTicket?.createdAt
+                    ? dayjs(localTicket.createdAt).format("YYYY-MM-DD HH:mm")
+                    : "N/A"}
+                </div>
+              </Descriptions.Item>
+
+              <Descriptions.Item
+                label={
+                  <Space>
+                    <ClockCircleOutlined style={{ color: "#666" }} />
+                    <span>Last Updated</span>
+                  </Space>
+                }
+              >
+                <div style={{ color: "#595959" }}>
+                  {localTicket?.updatedAt
+                    ? dayjs(localTicket.updatedAt).format("YYYY-MM-DD HH:mm")
+                    : "N/A"}
+                </div>
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
         </div>
       )}
     </div>
