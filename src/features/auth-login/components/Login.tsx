@@ -18,27 +18,16 @@ const Login = () => {
 
   const onFinish = async (values: ILoginFormValues) => {
     try {
-      // Clear any previous errors
       setError(null);
-
       const result = await login(values).unwrap();
-
-      // Save token to localStorage
       localStorage.setItem("accessToken", result.accessToken);
-
-      // Show success message
       toast.success("Login successful!");
-
-      // Navigate to board
       navigate("/board");
     } catch (error) {
       const parsedError = parseLoginError(error);
       setError(parsedError);
-
-      // Show error message in toast as well
       toast.error(parsedError.message);
 
-      // If it's a field-specific error, focus on that field
       if (parsedError.field) {
         form.setFields([
           {
