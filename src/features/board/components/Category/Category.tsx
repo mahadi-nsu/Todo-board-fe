@@ -18,6 +18,7 @@ import {
   useDeleteCategoryMutation,
   useGetCategoriesQuery,
 } from "@/store/services/categoryApi";
+import toast from "react-hot-toast";
 
 interface CategoryProps {
   label: { guid: string; title: string };
@@ -69,9 +70,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
 
   const handleConfirmDelete = async () => {
     if (!selectedDestinationCategory) {
-      message.warning(
-        "Please select a destination category for existing tickets"
-      );
+      toast.error("Please select a destination category for existing tickets");
       return;
     }
 
@@ -171,7 +170,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       updateData.categoryId = selectedTicket.categoryId || parseInt(label.guid);
 
       await updateTicket(updateData).unwrap();
-      message.success("Ticket updated successfully!");
+      // message.success("Ticket updated successfully!");
       await refetchTickets(); // Refetch tickets to get updated data
       setIsTicketModalVisible(false); // Close the modal
       setSelectedTicket(null); // Clear selected ticket
@@ -182,6 +181,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
         (error as { data?: { message?: string } })?.data?.message ||
         "Failed to update ticket";
       message.error(errorMessage);
+      throw error;
     }
   };
 
@@ -300,10 +300,27 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       onTicketUpdate();
     } catch (error) {
       console.error("Move ticket error:", error);
-      const errorMessage =
-        (error as { data?: { message?: string } })?.data?.message ||
-        "Failed to move ticket";
-      message.error(errorMessage);
+      let errorMessage = "Failed to move ticket";
+      if (error && typeof error === "object") {
+        // If backend returns an array of errors (like your example)
+        if (
+          Array.isArray((error as any)?.data) &&
+          (error as any)?.data[0]?.message
+        ) {
+          errorMessage = (error as any).data[0].message;
+        } else if ((error as any)?.data?.error?.message) {
+          errorMessage = (error as any).data.error.message;
+        } else if ((error as any)?.data?.message) {
+          errorMessage = (error as any).data.message;
+        }
+      }
+      if (errorMessage === "Validation failed") {
+        toast.error(
+          "This card is expired. To move it, please extend the expiry date."
+        );
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setDraggedTicket(null);
     }

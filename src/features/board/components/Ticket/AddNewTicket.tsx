@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import { Modal, Form, Input, DatePicker, Button, message } from "antd";
+import { Modal, Form, Input, DatePicker, Button } from "antd";
 import { PlusOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
+import toast from "react-hot-toast";
 import { useCreateTicketMutation } from "@/store/services/ticketApi";
 
 const { TextArea } = Input;
@@ -45,29 +46,48 @@ const AddNewTicket: React.FC<AddNewTicketProps> = ({
 
   const handleSubmit = async (values: TicketFormData) => {
     if (!values.title.trim()) {
-      message.error("Ticket title is required");
+      toast.error("Ticket title is required");
       return;
     }
     if (!values.description.trim()) {
-      message.error("Ticket description is required");
+      toast.error("Ticket description is required");
       return;
     }
 
     try {
+      // Set the expiration date to the end of the selected day (23:59:59)
+      let expiresAt: string;
+      if (values.expiry_date) {
+        const selectedDate = values.expiry_date;
+        const isToday = selectedDate.isSame(dayjs(), "day");
+
+        if (isToday) {
+          // If today is selected, set to end of day (23:59:59)
+          expiresAt = selectedDate.endOf("day").toISOString();
+        } else {
+          // For future dates, set to end of day (23:59:59)
+          expiresAt = selectedDate.endOf("day").toISOString();
+        }
+      } else {
+        toast.error("Please select an expiry date");
+        return;
+      }
+
       await createTicket({
         title: values.title.trim(),
         description: values.description.trim(),
-        expiresAt: values.expiry_date.toISOString(),
+        expiresAt: expiresAt,
         categoryId: categoryId,
       }).unwrap();
 
-      message.success("Ticket created successfully!");
+      toast.success("Ticket created successfully!");
       form.resetFields();
       onSuccess();
     } catch (error) {
       const errorMessage =
-        (error as any)?.data?.message || "Failed to create ticket";
-      message.error(errorMessage);
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Failed to create ticket";
+      toast.error(errorMessage);
     }
   };
 

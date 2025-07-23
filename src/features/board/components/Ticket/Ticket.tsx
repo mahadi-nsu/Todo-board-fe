@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, Typography, Tag, Space } from "antd";
+import dayjs from "dayjs";
 
 const { Text, Title } = Typography;
 
@@ -58,6 +59,24 @@ const Ticket: React.FC<TicketProps> = ({
     }
   };
 
+  // Expiry logic
+  let expiryStatus: "expired" | "expiring-soon" | null = null;
+  let expiryText = "";
+  let expiryColor = "";
+  if (ticket.expiresAt) {
+    const now = dayjs();
+    const expires = dayjs(ticket.expiresAt);
+    if (expires.isBefore(now, "minute")) {
+      expiryStatus = "expired";
+      expiryText = "Expired";
+      expiryColor = "red";
+    } else if (expires.diff(now, "hour") < 24) {
+      expiryStatus = "expiring-soon";
+      expiryText = "Expiring Soon";
+      expiryColor = "orange";
+    }
+  }
+
   return (
     <Card
       className={`mb-6 cursor-grab hover:shadow-md transition-all duration-200 ${
@@ -68,10 +87,38 @@ const Ticket: React.FC<TicketProps> = ({
       onClick={handleClick}
       draggable={true}
       onDragStart={onDragStart}
+      style={{
+        width: "100%",
+        position: "relative",
+        ...(expiryStatus ? { border: `2px solid ${expiryColor}` } : {}),
+      }}
+      headStyle={
+        expiryStatus ? { borderBottom: `2px solid ${expiryColor}` } : undefined
+      }
     >
-      <Title level={5} className="mb-2 text-gray-800 truncate">
-        {ticket.title}
-      </Title>
+      <div style={{ position: "relative", minHeight: 32 }}>
+        {expiryStatus && (
+          <Tag
+            color={expiryColor}
+            style={{
+              fontWeight: 600,
+              position: "absolute",
+              top: 0,
+              right: 0,
+              zIndex: 2,
+            }}
+          >
+            {expiryText}
+          </Tag>
+        )}
+        <Title
+          level={5}
+          className="mb-2 text-gray-800 truncate"
+          style={{ marginBottom: 0 }}
+        >
+          {ticket.title}
+        </Title>
+      </div>
       <Text
         type="secondary"
         className="text-sm line-clamp-2 mb-3 block"

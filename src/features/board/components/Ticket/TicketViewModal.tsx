@@ -101,10 +101,26 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
+
+      // Set the expiration date to the end of the selected day (23:59:59)
+      let expiresAt: string | null = null;
+      if (values.expiresAt) {
+        const selectedDate = values.expiresAt;
+        const isToday = selectedDate.isSame(dayjs(), "day");
+
+        if (isToday) {
+          // If today is selected, set to end of day (23:59:59)
+          expiresAt = selectedDate.endOf("day").toISOString();
+        } else {
+          // For future dates, set to end of day (23:59:59)
+          expiresAt = selectedDate.endOf("day").toISOString();
+        }
+      }
+
       const updatedTicket = {
         ...ticket,
         ...values,
-        expiresAt: values.expiresAt ? values.expiresAt.toISOString() : null,
+        expiresAt: expiresAt,
       };
 
       await onUpdate(updatedTicket);
@@ -112,6 +128,8 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
       toast.success("Ticket updated successfully!");
     } catch (error) {
       console.error("Form validation error:", error);
+      // Don't close editing mode on error so user can see the error and fix it
+      // The error message will be shown by the parent component (Category.tsx)
     }
   };
 
@@ -311,8 +329,30 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
             <TextArea rows={4} placeholder="Enter ticket description" />
           </Form.Item>
 
-          <Form.Item name="expiresAt" label="Expires At">
-            <DatePicker style={{ width: "100%" }} showTime />
+          <Form.Item
+            name="expiresAt"
+            label="Expires At"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (value && value.isBefore(dayjs().startOf("day"))) {
+                    return Promise.reject(
+                      new Error("Expiry date cannot be in the past")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <DatePicker
+              style={{ width: "100%" }}
+              format="YYYY-MM-DD"
+              placeholder="Select expiry date"
+              disabledDate={(current) =>
+                current && current < dayjs().startOf("day")
+              }
+            />
           </Form.Item>
         </Form>
       ) : (
