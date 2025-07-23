@@ -27,11 +27,7 @@ const Register = () => {
 
   const onFinish = async (values: IRegisterFormValues) => {
     try {
-      // Clear any previous errors
       setError(null);
-
-      // Remove confirmPassword before sending to API
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...registerData } = values;
 
       // Register the user
@@ -52,11 +48,7 @@ const Register = () => {
     } catch (error) {
       const parsedError = parseRegisterError(error);
       setError(parsedError);
-
-      // Show error message in toast as well
       toast.error(parsedError.message);
-
-      // If it's a field-specific error, focus on that field
       if (parsedError.field) {
         form.setFields([
           {
@@ -69,7 +61,6 @@ const Register = () => {
   };
 
   const onValuesChange = () => {
-    // Clear error when user starts typing
     if (error) {
       setError(null);
     }
