@@ -87,12 +87,26 @@ const Ticket: React.FC<TicketProps> = ({
       onClick={handleClick}
       draggable={true}
       onDragStart={onDragStart}
-      style={expiryStatus ? { border: `2px solid ${expiryColor}` } : undefined}
+      style={{ width: "100%", position: "relative" }}
       headStyle={
         expiryStatus ? { borderBottom: `2px solid ${expiryColor}` } : undefined
       }
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ position: "relative", minHeight: 32 }}>
+        {expiryStatus && (
+          <Tag
+            color={expiryColor}
+            style={{
+              fontWeight: 600,
+              position: "absolute",
+              top: 0,
+              right: 0,
+              zIndex: 2,
+            }}
+          >
+            {expiryText}
+          </Tag>
+        )}
         <Title
           level={5}
           className="mb-2 text-gray-800 truncate"
@@ -100,11 +114,6 @@ const Ticket: React.FC<TicketProps> = ({
         >
           {ticket.title}
         </Title>
-        {expiryStatus && (
-          <Tag color={expiryColor} style={{ fontWeight: 600 }}>
-            {expiryText}
-          </Tag>
-        )}
       </div>
       <Text
         type="secondary"
