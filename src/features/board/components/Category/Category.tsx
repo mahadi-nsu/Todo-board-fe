@@ -170,7 +170,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       updateData.categoryId = selectedTicket.categoryId || parseInt(label.guid);
 
       await updateTicket(updateData).unwrap();
-      message.success("Ticket updated successfully!");
+      // message.success("Ticket updated successfully!");
       await refetchTickets(); // Refetch tickets to get updated data
       setIsTicketModalVisible(false); // Close the modal
       setSelectedTicket(null); // Clear selected ticket
@@ -181,6 +181,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
         (error as { data?: { message?: string } })?.data?.message ||
         "Failed to update ticket";
       message.error(errorMessage);
+      throw error;
     }
   };
 

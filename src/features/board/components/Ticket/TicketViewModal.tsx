@@ -42,14 +42,6 @@ import {
 import { useGetLabelsQuery } from "@/store/services/labelApi";
 import { useGetCategoriesQuery } from "@/store/services/categoryApi";
 
-function debounceFn<T extends (...args: any[]) => void>(fn: T, delay: number) {
-  let timer: ReturnType<typeof setTimeout> | null = null;
-  return (...args: Parameters<T>) => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-}
-
 const { TextArea } = Input;
 const { TabPane } = Tabs;
 
@@ -93,66 +85,51 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
     setLocalTicket(ticket);
   }, [ticket]);
 
-  // Draft logic
-  const draftKey = ticket ? `ticket-draft-${ticket.id}` : null;
-  const saveDraft = debounceFn((desc: string) => {
-    if (draftKey) {
-      localStorage.setItem(draftKey, desc);
-    }
-  }, 400);
-
-  // Clear all ticket drafts on browser refresh
-  useEffect(() => {
-    const clearTicketDrafts = () => {
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith("ticket-draft-")) {
-          localStorage.removeItem(key);
-        }
-      });
-    };
-    window.addEventListener("load", clearTicketDrafts);
-    return () => {
-      window.removeEventListener("load", clearTicketDrafts);
-    };
-  }, []);
-
-  // Load draft on edit start
   const handleEdit = () => {
     setIsEditing(true);
-    setActiveTab("details");
+    setActiveTab("details"); // Switch to details tab when editing
+    // Populate form with current ticket data
     if (ticket) {
-      let description = ticket.description;
-      // Load draft if present
-      if (draftKey) {
-        const draft = localStorage.getItem(draftKey);
-        if (draft !== null) {
-          description = draft;
-        }
-      }
       form.setFieldsValue({
         title: ticket.title,
-        description,
+        description: ticket.description,
         expiresAt: ticket.expiresAt ? dayjs(ticket.expiresAt) : null,
       });
     }
   };
 
-  // On save, clear draft
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
+
+      // Set the expiration date to the end of the selected day (23:59:59)
+      let expiresAt: string | null = null;
+      if (values.expiresAt) {
+        const selectedDate = values.expiresAt;
+        const isToday = selectedDate.isSame(dayjs(), "day");
+
+        if (isToday) {
+          // If today is selected, set to end of day (23:59:59)
+          expiresAt = selectedDate.endOf("day").toISOString();
+        } else {
+          // For future dates, set to end of day (23:59:59)
+          expiresAt = selectedDate.endOf("day").toISOString();
+        }
+      }
+
       const updatedTicket = {
         ...ticket,
         ...values,
-        expiresAt: values.expiresAt ? values.expiresAt.toISOString() : null,
+        expiresAt: expiresAt,
       };
+
       await onUpdate(updatedTicket);
       setIsEditing(false);
       toast.success("Ticket updated successfully!");
-      // Clear draft
-      if (draftKey) localStorage.removeItem(draftKey);
     } catch (error) {
       console.error("Form validation error:", error);
+      // Don't close editing mode on error so user can see the error and fix it
+      // The error message will be shown by the parent component (Category.tsx)
     }
   };
 
@@ -335,15 +312,7 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   const renderDetailsTab = () => (
     <div style={{ padding: "16px 0" }}>
       {isEditing ? (
-        <Form
-          form={form}
-          layout="vertical"
-          onValuesChange={(_, allValues) => {
-            if (allValues.description !== undefined) {
-              saveDraft(allValues.description);
-            }
-          }}
-        >
+        <Form form={form} layout="vertical">
           <Form.Item
             name="title"
             label="Title"
@@ -360,8 +329,30 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
             <TextArea rows={4} placeholder="Enter ticket description" />
           </Form.Item>
 
-          <Form.Item name="expiresAt" label="Expires At">
-            <DatePicker style={{ width: "100%" }} showTime />
+          <Form.Item
+            name="expiresAt"
+            label="Expires At"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (value && value.isBefore(dayjs().startOf("day"))) {
+                    return Promise.reject(
+                      new Error("Expiry date cannot be in the past")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <DatePicker
+              style={{ width: "100%" }}
+              format="YYYY-MM-DD"
+              placeholder="Select expiry date"
+              disabledDate={(current) =>
+                current && current < dayjs().startOf("day")
+              }
+            />
           </Form.Item>
         </Form>
       ) : (
