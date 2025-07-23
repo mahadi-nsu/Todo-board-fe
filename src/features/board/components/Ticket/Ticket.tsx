@@ -87,7 +87,11 @@ const Ticket: React.FC<TicketProps> = ({
       onClick={handleClick}
       draggable={true}
       onDragStart={onDragStart}
-      style={{ width: "100%", position: "relative" }}
+      style={{
+        width: "100%",
+        position: "relative",
+        ...(expiryStatus ? { border: `2px solid ${expiryColor}` } : {}),
+      }}
       headStyle={
         expiryStatus ? { borderBottom: `2px solid ${expiryColor}` } : undefined
       }
