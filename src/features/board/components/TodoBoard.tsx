@@ -80,7 +80,7 @@ const TodoBoard = () => {
               {categories?.map((category) => (
                 <div
                   key={category.id}
-                  className="w-full sm:min-w-[320px] sm:max-w-xs flex-shrink-0"
+                  className="w-full sm:min-w-[320px] sm:max-w-[440px] flex-shrink-0"
                 >
                   <Category
                     label={{
