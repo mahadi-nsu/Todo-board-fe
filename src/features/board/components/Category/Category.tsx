@@ -20,6 +20,11 @@ import {
   useGetCategoriesQuery,
 } from "@/store/services/categoryApi";
 import toast from "react-hot-toast";
+import {
+  convertToTicketData,
+  extractApiErrorMessage,
+  findTicketById,
+} from "../../utils/categoryUtils";
 
 const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   const [isAddTicketVisible, setIsAddTicketVisible] = useState(false);
@@ -46,21 +51,9 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
     allTickets?.filter((ticket) => ticket.categoryId === categoryId) || [];
 
   // Convert API tickets to TicketData format
-  const ticketData: TicketData[] = tickets.map((ticket) => ({
-    id: ticket.id,
-    title: ticket.title,
-    description: ticket.description || "No description",
-    expiresAt: ticket.expiresAt,
-    categoryId: ticket.categoryId,
-    createdAt: ticket.createdAt,
-    updatedAt: ticket.updatedAt,
-    labels: ticket.labels,
-    category: ticket.category,
-    history: ticket.history,
-  }));
+  const ticketData: TicketData[] = tickets.map(convertToTicketData);
 
   const handleDeleteCategory = () => {
-    console.log("Delete category clicked for:", label.title, "ID:", label.guid);
     setIsDeleteModalVisible(true);
   };
 
@@ -77,21 +70,10 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
     }
 
     try {
-      console.log("Attempting to delete category:", parseInt(label.guid));
-      console.log(
-        "Selected destination category:",
-        selectedDestinationCategory
-      );
-      console.log(
-        "Selected destination category (string):",
-        selectedDestinationCategory.toString()
-      );
-
       const deleteParams = {
         id: label.guid,
         moveExistingTicketsToCategoryId: selectedDestinationCategory.toString(),
       };
-      console.log("Delete parameters:", deleteParams);
 
       await deleteCategory(deleteParams).unwrap();
       message.success("Category deleted successfully!");
@@ -106,9 +88,6 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       await refetchCategories();
       onTicketUpdate();
     } catch (error) {
-      console.error("Delete category error:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
-
       let errorMessage = "Failed to delete category";
       if (error && typeof error === "object") {
         if (
@@ -172,10 +151,8 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       setSelectedTicket(null); // Clear selected ticket
       onTicketUpdate();
     } catch (error) {
-      console.error("Update ticket error:", error);
       const errorMessage =
-        (error as { data?: { message?: string } })?.data?.message ||
-        "Failed to update ticket";
+        extractApiErrorMessage(error) || "Failed to update ticket";
       message.error(errorMessage);
       throw error;
     }
@@ -208,10 +185,8 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       await refetchTickets(); // Refetch tickets to get updated data
       onTicketUpdate();
     } catch (error) {
-      console.error("Delete ticket error:", error);
       const errorMessage =
-        (error as { data?: { message?: string } })?.data?.message ||
-        "Failed to delete ticket";
+        extractApiErrorMessage(error) || "Failed to delete ticket";
       message.error(errorMessage);
     }
   };
@@ -246,23 +221,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
 
       if (ticketId) {
         // Find the ticket in all tickets and convert to TicketData format
-        const foundTicket = allTickets?.find(
-          (t) => t.id.toString() === ticketId
-        );
-        if (foundTicket) {
-          ticketToMove = {
-            id: foundTicket.id,
-            title: foundTicket.title,
-            description: foundTicket.description || "",
-            expiresAt: foundTicket.expiresAt,
-            categoryId: foundTicket.categoryId,
-            createdAt: foundTicket.createdAt,
-            updatedAt: foundTicket.updatedAt,
-            labels: foundTicket.labels,
-            category: foundTicket.category,
-            history: foundTicket.history,
-          };
-        }
+        ticketToMove = findTicketById(allTickets, ticketId) || null;
       }
     }
 
@@ -295,21 +254,8 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       await refetchTickets();
       onTicketUpdate();
     } catch (error) {
-      console.error("Move ticket error:", error);
-      let errorMessage = "Failed to move ticket";
-      if (error && typeof error === "object") {
-        // If backend returns an array of errors (like your example)
-        if (
-          Array.isArray((error as any)?.data) &&
-          (error as any)?.data[0]?.message
-        ) {
-          errorMessage = (error as any).data[0].message;
-        } else if ((error as any)?.data?.error?.message) {
-          errorMessage = (error as any).data.error.message;
-        } else if ((error as any)?.data?.message) {
-          errorMessage = (error as any).data.message;
-        }
-      }
+      const errorMessage =
+        extractApiErrorMessage(error) || "Failed to move ticket";
       if (errorMessage === "Validation failed") {
         toast.error(
           "This card is expired. To move it, please extend the expiry date."
