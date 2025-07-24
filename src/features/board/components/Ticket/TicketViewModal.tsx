@@ -88,6 +88,11 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
     setLocalTicket(ticket);
   }, [ticket]);
 
+  // Reset tab to 'details' when a new ticket is opened
+  useEffect(() => {
+    setActiveTab("details");
+  }, [ticket?.id]);
+
   // Draft key for localStorage
   const draftKey = ticket ? `ticket-draft-${ticket.id}` : null;
 
