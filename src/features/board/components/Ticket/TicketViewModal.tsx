@@ -1,34 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  Tabs,
-  Form,
-  Input,
-  DatePicker,
-  Button,
-  Space,
-  Tag,
-  Select,
-  Divider,
-  Timeline,
-  Popconfirm,
-  Card,
-  Descriptions,
-  Dropdown,
-} from "antd";
+import { Modal, Tabs, Form, Button, Space, Popconfirm, Dropdown } from "antd";
 import toast from "react-hot-toast";
 import {
   EditOutlined,
   SaveOutlined,
   CloseOutlined,
   DeleteOutlined,
-  PlusOutlined,
-  ArrowRightOutlined,
-  CalendarOutlined,
-  TagOutlined,
-  FolderOutlined,
-  ClockCircleOutlined,
-  UserOutlined,
   SwapOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -45,7 +22,6 @@ import type { TicketData } from "../../types/ticketTypes";
 import RenderDetailsTab from "./RenderDetailsTab";
 import RenderHistoryTab from "./RenderHistoryTab";
 
-const { TextArea } = Input;
 const { TabPane } = Tabs;
 
 interface TicketViewModalProps {
@@ -114,13 +90,6 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   ) => {
     if (draftKey) {
       localStorage.setItem(draftKey, e.target.value);
-    }
-  };
-
-  // Remove draft from localStorage
-  const clearDraft = () => {
-    if (draftKey) {
-      localStorage.removeItem(draftKey);
     }
   };
 
