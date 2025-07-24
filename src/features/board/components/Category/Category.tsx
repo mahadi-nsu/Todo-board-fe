@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Card, Button, Badge, Dropdown, message, Modal, Select } from "antd";
+import { Card, Button, Badge, Dropdown, message } from "antd";
 import {
   MoreOutlined,
   PlusOutlined,
@@ -25,8 +25,10 @@ import {
   extractApiErrorMessage,
   findTicketById,
 } from "../../utils/categoryUtils";
+import DeleteCategoryModal from "./DeleteCategoryModal";
 
 const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
+  // Local States
   const [isAddTicketVisible, setIsAddTicketVisible] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -36,7 +38,10 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   const [isTicketModalVisible, setIsTicketModalVisible] = useState(false);
   const [draggedTicket, setDraggedTicket] = useState<TicketData | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+
   const dropZoneRef = useRef<HTMLDivElement>(null);
+
+  // API Queries
   const { data: allTickets, refetch: refetchTickets } = useGetTicketsQuery();
   const { data: categories, refetch: refetchCategories } =
     useGetCategoriesQuery();
@@ -79,10 +84,8 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       message.success("Category deleted successfully!");
       setIsDeleteModalVisible(false);
       setSelectedDestinationCategory(null);
-
       // Small delay to ensure API has processed the deletion
       await new Promise((resolve) => setTimeout(resolve, 100));
-
       // Refresh ticket data to show moved tickets immediately
       await refetchTickets();
       await refetchCategories();
@@ -141,14 +144,11 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       if (updatedTicket.expiresAt)
         updateData.expiresAt = updatedTicket.expiresAt;
 
-      // Always include categoryId as it's required by the API
       updateData.categoryId = selectedTicket.categoryId || parseInt(label.guid);
-
       await updateTicket(updateData).unwrap();
-      // message.success("Ticket updated successfully!");
-      await refetchTickets(); // Refetch tickets to get updated data
-      setIsTicketModalVisible(false); // Close the modal
-      setSelectedTicket(null); // Clear selected ticket
+      await refetchTickets();
+      setIsTicketModalVisible(false);
+      setSelectedTicket(null);
       onTicketUpdate();
     } catch (error) {
       const errorMessage =
@@ -182,7 +182,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       const ticketId = selectedTicket.id;
       await deleteTicket(ticketId).unwrap();
       message.success("Ticket deleted successfully!");
-      await refetchTickets(); // Refetch tickets to get updated data
+      await refetchTickets();
       onTicketUpdate();
     } catch (error) {
       const errorMessage =
@@ -393,46 +393,17 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       />
 
       {/* Delete Category Modal */}
-      <Modal
-        title="Delete Category"
-        open={isDeleteModalVisible}
+      <DeleteCategoryModal
+        visible={isDeleteModalVisible}
         onOk={handleConfirmDelete}
         onCancel={handleCancelDelete}
-        okText="Delete"
-        cancelText="Cancel"
-        okType="danger"
         confirmLoading={isDeleting}
-      >
-        <div style={{ marginBottom: "16px" }}>
-          <p>
-            Are you sure you want to delete <strong>"{label.title}"</strong>?
-          </p>
-          <p style={{ marginTop: "8px", color: "#666" }}>
-            All tickets in this category will be moved to the selected
-            destination category.
-          </p>
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            Move existing tickets to:
-          </label>
-          <Select
-            placeholder="Select destination category"
-            style={{ width: "100%" }}
-            value={selectedDestinationCategory}
-            onChange={setSelectedDestinationCategory}
-            options={
-              categories
-                ?.filter((cat) => cat.id !== parseInt(label.guid))
-                .map((cat) => ({
-                  label: cat.title,
-                  value: cat.id,
-                })) || []
-            }
-          />
-        </div>
-      </Modal>
+        categories={categories || []}
+        currentCategoryId={parseInt(label.guid)}
+        selectedDestinationCategory={selectedDestinationCategory}
+        setSelectedDestinationCategory={setSelectedDestinationCategory}
+        labelTitle={label.title}
+      />
     </Card>
   );
 };
