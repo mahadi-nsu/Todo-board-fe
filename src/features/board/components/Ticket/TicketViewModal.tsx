@@ -32,7 +32,7 @@ import {
   SwapOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import type { TicketData } from "./Ticket";
+
 import {
   useGetTicketQuery,
   useAddLabelToTicketMutation,
@@ -41,6 +41,7 @@ import {
 } from "@/store/services/ticketApi";
 import { useGetLabelsQuery } from "@/store/services/labelApi";
 import { useGetCategoriesQuery } from "@/store/services/categoryApi";
+import type { TicketData } from "../../types/ticketTypes";
 
 const { TextArea } = Input;
 const { TabPane } = Tabs;
@@ -84,6 +85,37 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   useEffect(() => {
     setLocalTicket(ticket);
   }, [ticket]);
+
+  // Draft key for localStorage
+  const draftKey = ticket ? `ticket-draft-${ticket.id}` : null;
+
+  // Load draft from localStorage when editing starts
+  useEffect(() => {
+    if (isEditing && draftKey && ticket) {
+      const draft = localStorage.getItem(draftKey);
+      form.setFieldsValue({
+        title: ticket.title,
+        description: draft ?? ticket.description,
+        expiresAt: ticket.expiresAt ? dayjs(ticket.expiresAt) : null,
+      });
+    }
+  }, [isEditing, draftKey, form, ticket]);
+
+  // Save draft to localStorage on description change
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    if (draftKey) {
+      localStorage.setItem(draftKey, e.target.value);
+    }
+  };
+
+  // Remove draft from localStorage
+  const clearDraft = () => {
+    if (draftKey) {
+      localStorage.removeItem(draftKey);
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -326,7 +358,11 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
             label="Description"
             rules={[{ required: true, message: "Please enter a description" }]}
           >
-            <TextArea rows={4} placeholder="Enter ticket description" />
+            <TextArea
+              rows={4}
+              placeholder="Enter ticket description"
+              onChange={handleDescriptionChange}
+            />
           </Form.Item>
 
           <Form.Item
