@@ -8,7 +8,7 @@ import { categoryTitleRules } from "../../utils/addNewCategoryUtils";
 import type {
   AddNewCategoryProps,
   CategoryFormData,
-} from "../../types/addNewcategory";
+} from "../../types/addNewcategoryTypes";
 
 const AddNewCategory: React.FC<AddNewCategoryProps> = ({
   visible,

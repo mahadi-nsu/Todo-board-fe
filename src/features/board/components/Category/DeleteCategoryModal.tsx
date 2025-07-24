@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Select } from "antd";
-import type { DeleteCategoryModalProps } from "../../types/deleteCategory";
+import type { DeleteCategoryModalProps } from "../../types/deleteCategoryTypes";
 
 const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
   visible,

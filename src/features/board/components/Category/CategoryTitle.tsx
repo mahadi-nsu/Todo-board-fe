@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Typography, Input, Button, Space, message } from "antd";
 import { EditOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { useUpdateCategoryMutation } from "@/store/services/categoryApi";
-import type { CategoryTitleProps } from "../../types/category";
+import type { CategoryTitleProps } from "../../types/categoryTypes";
 
 const { Text } = Typography;
 

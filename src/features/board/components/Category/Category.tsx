@@ -4,7 +4,7 @@ import { MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import CategoryTitle from "./CategoryTitle";
 import { Ticket, AddNewTicket, TicketViewModal } from "../Ticket";
 import type { TicketData } from "../Ticket/Ticket";
-import type { CategoryProps } from "../../types/category";
+import type { CategoryProps } from "../../types/categoryTypes";
 import {
   useGetTicketsQuery,
   useUpdateTicketMutation,
