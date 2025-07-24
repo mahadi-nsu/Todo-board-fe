@@ -1,15 +1,5 @@
 import type { Rule } from "antd/es/form";
 
-export interface CategoryFormData {
-  title: string;
-}
-
-export interface AddNewCategoryProps {
-  visible: boolean;
-  onSuccess: () => void;
-  onCancel: () => void;
-}
-
 export const categoryTitleRules: Rule[] = [
   { required: true, message: "Please enter a category title" },
   {

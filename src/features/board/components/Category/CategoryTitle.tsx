@@ -2,16 +2,9 @@ import React, { useState } from "react";
 import { Typography, Input, Button, Space, message } from "antd";
 import { EditOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { useUpdateCategoryMutation } from "@/store/services/categoryApi";
+import type { CategoryTitleProps } from "../../types/category";
 
 const { Text } = Typography;
-
-// FIXME: Will move this to types folder
-interface CategoryTitleProps {
-  label: { guid: string; title: string };
-  onSuccess: () => void;
-  onCancel: () => void;
-  forceEdit?: boolean;
-}
 
 const CategoryTitle: React.FC<CategoryTitleProps> = ({
   label,
