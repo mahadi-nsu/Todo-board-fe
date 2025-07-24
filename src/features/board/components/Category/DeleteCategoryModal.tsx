@@ -1,17 +1,6 @@
 import React from "react";
 import { Modal, Select } from "antd";
-
-interface DeleteCategoryModalProps {
-  visible: boolean;
-  onOk: () => void;
-  onCancel: () => void;
-  confirmLoading: boolean;
-  categories: Array<{ id: number; title: string }>;
-  currentCategoryId: number;
-  selectedDestinationCategory: number | null;
-  setSelectedDestinationCategory: (id: number | null) => void;
-  labelTitle: string;
-}
+import type { DeleteCategoryModalProps } from "../../types/deleteCategory";
 
 const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
   visible,
