@@ -3,11 +3,12 @@ import { Modal, Form, Input, Button } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { useCreateCategoryMutation } from "@/store/services/categoryApi";
 import toast from "react-hot-toast";
-import type {
-  CategoryFormData,
-  AddNewCategoryProps,
-} from "../../utils/addNewCategoryUtils";
+
 import { categoryTitleRules } from "../../utils/addNewCategoryUtils";
+import type {
+  AddNewCategoryProps,
+  CategoryFormData,
+} from "../../types/addNewcategory";
 
 const AddNewCategory: React.FC<AddNewCategoryProps> = ({
   visible,
