@@ -16,7 +16,7 @@ export function convertToTicketData(ticket) {
 
 // Utility to extract error message from API error
 export function extractApiErrorMessage(error) {
-  if (!error || typeof error !== "object") return "Unknown error";
+  if (!error || typeof error !== "object") return null;
   if (Array.isArray(error?.data) && error.data[0]?.message) {
     return error.data[0].message;
   }
@@ -29,7 +29,7 @@ export function extractApiErrorMessage(error) {
   if (error?.status) {
     return `HTTP ${error.status}: Unknown error`;
   }
-  return "Unknown error";
+  return null;
 }
 
 // Utility to find a ticket by ID and convert to TicketData
