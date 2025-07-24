@@ -9,6 +9,7 @@ import {
 import CategoryTitle from "./CategoryTitle";
 import { Ticket, AddNewTicket, TicketViewModal } from "../Ticket";
 import type { TicketData } from "../Ticket/Ticket";
+import type { CategoryProps } from "../../types/category";
 import {
   useGetTicketsQuery,
   useUpdateTicketMutation,
@@ -19,11 +20,6 @@ import {
   useGetCategoriesQuery,
 } from "@/store/services/categoryApi";
 import toast from "react-hot-toast";
-
-interface CategoryProps {
-  label: { guid: string; title: string };
-  onTicketUpdate: () => void;
-}
 
 const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   const [isAddTicketVisible, setIsAddTicketVisible] = useState(false);
