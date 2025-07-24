@@ -29,13 +29,14 @@ const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
           Are you sure you want to delete <strong>"{labelTitle}"</strong>?
         </p>
         <p style={{ marginTop: "8px", color: "red", fontWeight: "bold" }}>
-          All tickets in this category will be moved to the selected destination
-          category.
+          Optionally, you can move all tickets in this category to another
+          category. If you do not select a destination, tickets will be deleted
+          with the category.
         </p>
       </div>
       <div>
         <label style={{ display: "block", marginBottom: "8px" }}>
-          Move existing tickets to:
+          Move existing tickets to (optional):
         </label>
         <Select
           placeholder="Select destination category"

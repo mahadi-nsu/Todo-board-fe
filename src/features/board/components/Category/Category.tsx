@@ -61,10 +61,6 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedDestinationCategory) {
-      toast.error("Please select a destination category for existing tickets");
-      return;
-    }
     if (selectedDestinationCategory === parseInt(label.guid)) {
       toast.error("Please select a different category as the destination");
       return;
@@ -72,7 +68,12 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
     try {
       const deleteParams = {
         id: label.guid,
-        moveExistingTicketsToCategoryId: selectedDestinationCategory.toString(),
+        ...(selectedDestinationCategory
+          ? {
+              moveExistingTicketsToCategoryId:
+                selectedDestinationCategory.toString(),
+            }
+          : {}),
       };
       await deleteCategory(deleteParams).unwrap();
       toast.success("Category deleted successfully!");
