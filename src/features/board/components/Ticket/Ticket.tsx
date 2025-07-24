@@ -1,43 +1,9 @@
 import React from "react";
 import { Card, Typography, Tag, Space } from "antd";
-import dayjs from "dayjs";
+import { getExpiryStatus } from "../../utils/ticketUtils";
+import type { TicketData, TicketProps } from "../../types/ticketTypes";
 
 const { Text, Title } = Typography;
-
-// TODO: Will move this when connecting with api's
-export interface TicketData {
-  id: number;
-  title: string;
-  description: string;
-  expiresAt?: string;
-  categoryId?: number;
-  createdAt?: string;
-  updatedAt?: string;
-  labels?: Array<{
-    label: {
-      id: number;
-      title: string;
-    };
-  }>;
-  category?: {
-    id: number;
-    title: string;
-  };
-  history?: Array<{
-    createdAt: string;
-    category: {
-      id: number;
-      title: string;
-    };
-  }>;
-}
-
-interface TicketProps {
-  ticket: TicketData;
-  onClick?: (ticket: TicketData) => void;
-  onDragStart?: (e: React.DragEvent) => void;
-  isDragging?: boolean;
-}
 
 const tagColors: Record<string, string> = {
   "Expires today": "orange",
@@ -60,22 +26,9 @@ const Ticket: React.FC<TicketProps> = ({
   };
 
   // Expiry logic
-  let expiryStatus: "expired" | "expiring-soon" | null = null;
-  let expiryText = "";
-  let expiryColor = "";
-  if (ticket.expiresAt) {
-    const now = dayjs();
-    const expires = dayjs(ticket.expiresAt);
-    if (expires.isBefore(now, "minute")) {
-      expiryStatus = "expired";
-      expiryText = "Expired";
-      expiryColor = "red";
-    } else if (expires.diff(now, "hour") < 24) {
-      expiryStatus = "expiring-soon";
-      expiryText = "Expiring Soon";
-      expiryColor = "orange";
-    }
-  }
+  const { expiryStatus, expiryText, expiryColor } = getExpiryStatus(
+    ticket.expiresAt
+  );
 
   return (
     <Card

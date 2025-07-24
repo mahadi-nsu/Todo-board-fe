@@ -3,7 +3,7 @@ import { Card, Button, Badge, Dropdown } from "antd";
 import { MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import CategoryTitle from "./CategoryTitle";
 import { Ticket, AddNewTicket, TicketViewModal } from "../Ticket";
-import type { TicketData } from "../Ticket/Ticket";
+import type { TicketData } from "../../types/ticketTypes";
 import type { CategoryProps } from "../../types/categoryTypes";
 import {
   useGetTicketsQuery,
