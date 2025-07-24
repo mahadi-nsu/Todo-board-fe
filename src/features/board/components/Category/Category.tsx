@@ -1,11 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Card, Button, Badge, Dropdown, message } from "antd";
-import {
-  MoreOutlined,
-  PlusOutlined,
-  DeleteOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+import { MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import CategoryTitle from "./CategoryTitle";
 import { Ticket, AddNewTicket, TicketViewModal } from "../Ticket";
 import type { TicketData } from "../Ticket/Ticket";
@@ -26,6 +21,7 @@ import {
   findTicketById,
 } from "../../utils/categoryUtils";
 import DeleteCategoryModal from "./DeleteCategoryModal";
+import { getCategoryMenuItems } from "./categoryMenuItems";
 
 const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   // Local States
@@ -67,19 +63,16 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       toast.error("Please select a destination category for existing tickets");
       return;
     }
-
     // Check if the selected destination is the same as the current category
     if (selectedDestinationCategory === parseInt(label.guid)) {
       message.warning("Please select a different category as the destination");
       return;
     }
-
     try {
       const deleteParams = {
         id: label.guid,
         moveExistingTicketsToCategoryId: selectedDestinationCategory.toString(),
       };
-
       await deleteCategory(deleteParams).unwrap();
       message.success("Category deleted successfully!");
       setIsDeleteModalVisible(false);
@@ -91,6 +84,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
       await refetchCategories();
       onTicketUpdate();
     } catch (error) {
+      // FIXME: Shift to a error util
       let errorMessage = "Failed to delete category";
       if (error && typeof error === "object") {
         if (
@@ -104,7 +98,6 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
           errorMessage = `HTTP ${error.status}: ${errorMessage}`;
         }
       }
-
       message.error(errorMessage);
     }
   };
@@ -125,7 +118,6 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
 
   const handleTicketUpdate = async (updatedTicket: Partial<TicketData>) => {
     if (!selectedTicket) return;
-
     try {
       const ticketId = selectedTicket.id;
       const updateData: {
@@ -164,7 +156,6 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   };
 
   const handleLabelUpdate = async () => {
-    // Just refetch tickets to get updated ticket label data without closing modal
     await refetchTickets();
     onTicketUpdate();
   };
@@ -173,7 +164,6 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
     if (!selectedTicket) {
       return;
     }
-
     // Close the modal immediately to prevent getTicket query from running
     setIsTicketModalVisible(false);
     setSelectedTicket(null);
@@ -212,34 +202,26 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-
     // Try to get ticket data from state or dataTransfer
     let ticketToMove = draggedTicket;
-
     if (!ticketToMove) {
       const ticketId = e.dataTransfer.getData("text/plain");
-
       if (ticketId) {
         // Find the ticket in all tickets and convert to TicketData format
         ticketToMove = findTicketById(allTickets, ticketId) || null;
       }
     }
-
     if (!ticketToMove) {
       return;
     }
-
     const targetCategoryId = parseInt(label.guid);
-
     // Don't drop if it's the same category
     if (ticketToMove.categoryId === targetCategoryId) {
       message.info("Ticket is already in this category");
       setDraggedTicket(null);
       return;
     }
-
     try {
-      // Update the ticket's category
       const updateData = {
         id: ticketToMove.id,
         categoryId: targetCategoryId,
@@ -247,9 +229,7 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
         description: ticketToMove.description,
         expiresAt: ticketToMove.expiresAt,
       };
-
       await updateTicket(updateData).unwrap();
-
       message.success(`Ticket moved to "${label.title}"`);
       await refetchTickets();
       onTicketUpdate();
@@ -273,21 +253,10 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
     setDraggedTicket(null);
   };
 
-  const menuItems = [
-    {
-      key: "edit",
-      icon: <EditOutlined />,
-      label: "Edit Category",
-      onClick: handleEditCategory,
-    },
-    {
-      key: "delete",
-      icon: <DeleteOutlined />,
-      label: "Delete Category",
-      danger: true,
-      onClick: handleDeleteCategory,
-    },
-  ];
+  const menuItems = getCategoryMenuItems(
+    handleEditCategory,
+    handleDeleteCategory
+  );
 
   return (
     <Card
