@@ -1,17 +1,9 @@
 import React from "react";
 import { Card, Typography, Tag, Space } from "antd";
 import { getExpiryStatus } from "../../utils/ticketUtils";
-import type { TicketData, TicketProps } from "../../types/ticketTypes";
+import type { TicketProps } from "../../types/ticketTypes";
 
 const { Text, Title } = Typography;
-
-const tagColors: Record<string, string> = {
-  "Expires today": "orange",
-  frontend: "blue",
-  backend: "purple",
-  high: "red",
-  low: "green",
-};
 
 const Ticket: React.FC<TicketProps> = ({
   ticket,
@@ -86,12 +78,7 @@ const Ticket: React.FC<TicketProps> = ({
       </Text>
       <Space size="small">
         {ticket.labels?.map((labelItem) => (
-          <Tag
-            key={labelItem.label.id}
-            color={tagColors[labelItem.label.title] || "default"}
-          >
-            {labelItem.label.title}
-          </Tag>
+          <Tag key={labelItem.label.id}>{labelItem.label.title}</Tag>
         ))}
       </Space>
     </Card>
