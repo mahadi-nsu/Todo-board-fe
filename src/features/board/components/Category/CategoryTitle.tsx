@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { Typography, Input, Button, Space, message } from "antd";
 import { EditOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
-import { useUpdateCategoryMutation } from "@/store/services/categoryApi";
+import {
+  useUpdateCategoryMutation,
+  useGetCategoriesQuery,
+} from "@/store/services/categoryApi";
 import type { CategoryTitleProps } from "../../types/categoryTypes";
 
 const { Text } = Typography;
@@ -15,6 +18,7 @@ const CategoryTitle: React.FC<CategoryTitleProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(label.title);
   const [updateCategory, { isLoading }] = useUpdateCategoryMutation();
+  const { refetch: refetchCategories } = useGetCategoriesQuery();
 
   // Trigger edit mode when forceEdit changes to true
   React.useEffect(() => {
@@ -36,6 +40,7 @@ const CategoryTitle: React.FC<CategoryTitleProps> = ({
         id: parseInt(label.guid),
         title: title.trim(),
       }).unwrap();
+      await refetchCategories();
       message.success("Category updated successfully!");
       setIsEditing(false);
       onSuccess();
