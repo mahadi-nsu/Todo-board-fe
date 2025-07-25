@@ -2,7 +2,21 @@
 
 This is the frontend for the TODO project, built with React, TypeScript, and Vite.
 
-## Getting Started
+## Features
+
+- [x] Login
+- [x] Register
+- [x] Create category/column
+- [x] Delete category (with option to move tickets to another category or delete them)
+- [x] Add/Edit/Delete ticket
+- [x] Label management (add/edit/delete labels)
+- [x] Drag and drop tickets between categories
+- [x] Ticket description draft is saved in cache if editing is interrupted
+- [x] Expire card logic (shows expiring/expired status)
+- [x] Ticket history (view all status/category changes)
+- [x] Responsive design
+
+## How to run this project :
 
 1. **Clone the repository:**
 
