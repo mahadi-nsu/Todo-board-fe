@@ -48,7 +48,7 @@ const TodoBoard = () => {
         <div className="container mx-auto px-4 py-4 sm:py-8">
           {/* Mobile-friendly header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-2xl font-bold text-gray-900">
               Task Board
             </h1>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">

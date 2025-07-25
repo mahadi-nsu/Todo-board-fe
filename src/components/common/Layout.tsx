@@ -30,7 +30,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               margin: 0,
             }}
           >
-            Todo Board
+            📋 Todo Board
           </h1>
         </div>
         <UserProfile />
