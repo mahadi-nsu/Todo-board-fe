@@ -49,4 +49,22 @@ The app will be available at the URL shown in your terminal (usually http://loca
 > **Note:**
 > Ensure the backend port and API URL in your `.env` file match your backend server configuration.
 
+## Application Images
+
+### Task Board
+
+![Task Board](src/assets/project-images/task-board.png)
+
+### Label Management
+
+![Label Management](src/assets/project-images/label.png)
+
+### Ticket Details
+
+![Ticket Details](src/assets/project-images/ticket-details.png)
+
+### Ticket History
+
+![Ticket History](src/assets/project-images/history.png)
+
 ---
