@@ -74,25 +74,63 @@ const TodoBoard = () => {
             </div>
           </div>
 
-          {/* Mobile-friendly board content */}
-          <div className="overflow-x-auto pb-4 -mx-4 sm:mx-0">
-            <div className="flex flex-col sm:flex-row gap-4 min-w-max px-4 sm:px-0">
-              {categories?.map((category) => (
-                <div
-                  key={category.id}
-                  className="w-full sm:min-w-[320px] sm:max-w-[400px] flex-shrink-0"
-                >
-                  <Category
-                    label={{
-                      guid: category.id.toString(),
-                      title: category.title,
-                    }}
-                    onTicketUpdate={() => {}}
-                  />
-                </div>
-              ))}
+          {/* Show message if no categories */}
+          {!categories || categories.length === 0 ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "50vh",
+                color: "#555",
+                borderRadius: 12,
+                margin: "48px auto",
+                maxWidth: 480,
+                padding: 32,
+              }}
+            >
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🗂️</div>
+              <div
+                style={{
+                  fontSize: 22,
+                  fontWeight: 600,
+                  marginBottom: 8,
+                  color: "#9C2007",
+                }}
+              >
+                No Categories/Column Yet!
+              </div>
+              <div
+                style={{ fontSize: 16, marginBottom: 24, textAlign: "center" }}
+              >
+                Click <b>Add Category</b> to create your first column and start
+                organizing your tasks.
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Mobile-friendly board content */}
+              <div className="overflow-x-auto pb-4 -mx-4 sm:mx-0">
+                <div className="flex flex-col sm:flex-row gap-4 min-w-max px-4 sm:px-0">
+                  {categories?.map((category) => (
+                    <div
+                      key={category.id}
+                      className="w-full sm:min-w-[320px] sm:max-w-[400px] flex-shrink-0"
+                    >
+                      <Category
+                        label={{
+                          guid: category.id.toString(),
+                          title: category.title,
+                        }}
+                        onTicketUpdate={() => {}}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
         <AddNewCategory
           visible={isAddCategoryVisible}
