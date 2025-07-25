@@ -3,16 +3,7 @@ import { Modal, Form, Input, Button } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { useCreateLabelMutation } from "@/store/services/labelApi";
 import toast from "react-hot-toast";
-
-interface AddNewLabelProps {
-  visible: boolean;
-  onSuccess: () => void;
-  onCancel: () => void;
-}
-
-interface LabelFormData {
-  title: string;
-}
+import type { AddNewLabelProps, LabelFormData } from "../../types/labelTypes";
 
 const AddNewLabel: React.FC<AddNewLabelProps> = ({
   visible,

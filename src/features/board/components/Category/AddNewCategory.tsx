@@ -4,15 +4,11 @@ import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { useCreateCategoryMutation } from "@/store/services/categoryApi";
 import toast from "react-hot-toast";
 
-interface CategoryFormData {
-  title: string;
-}
-
-interface AddNewCategoryProps {
-  visible: boolean;
-  onSuccess: () => void;
-  onCancel: () => void;
-}
+import { categoryTitleRules } from "../../utils/addNewCategoryUtils";
+import type {
+  AddNewCategoryProps,
+  CategoryFormData,
+} from "../../types/addNewcategoryTypes";
 
 const AddNewCategory: React.FC<AddNewCategoryProps> = ({
   visible,
@@ -87,14 +83,7 @@ const AddNewCategory: React.FC<AddNewCategoryProps> = ({
         <Form.Item
           name="title"
           label="Category Title"
-          rules={[
-            { required: true, message: "Please enter a category title" },
-            {
-              min: 1,
-              max: 50,
-              message: "Title must be between 1 and 50 characters",
-            },
-          ]}
+          rules={categoryTitleRules}
         >
           <Input
             placeholder="Enter category title (e.g., To Do, In Progress, Done)"

@@ -18,18 +18,12 @@ import {
 } from "@/store/services/labelApi";
 import AddNewLabel from "./AddNewLabel";
 import toast from "react-hot-toast";
+import type {
+  EditLabelData,
+  LabelManagementProps,
+} from "../../types/labelTypes";
 
 const { Search } = Input;
-
-interface LabelManagementProps {
-  visible: boolean;
-  onClose: () => void;
-}
-
-interface EditLabelData {
-  id: number;
-  title: string;
-}
 
 const LabelManagement: React.FC<LabelManagementProps> = ({
   visible,

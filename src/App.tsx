@@ -9,6 +9,7 @@ import Layout from "./components/common/Layout";
 import AuthRedirect from "./components/common/AuthRedirect";
 import { Toaster } from "react-hot-toast";
 import { useEffect } from "react";
+import NotFoundRedirect from "./components/common/NotFoundRedirect";
 
 function App() {
   useEffect(() => {
@@ -55,6 +56,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="*" element={<NotFoundRedirect />} />
           </Routes>
         </AnimatePresence>
       </BrowserRouter>

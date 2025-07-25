@@ -1,27 +1,15 @@
 import React, { useEffect } from "react";
 import { Modal, Form, Input, DatePicker, Button } from "antd";
 import { PlusOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { useCreateTicketMutation } from "@/store/services/ticketApi";
+import type {
+  AddNewTicketProps,
+  TicketFormData,
+} from "../../types/addNewTicketTypes";
 
 const { TextArea } = Input;
-
-interface AddNewTicketProps {
-  visible: boolean;
-  labelTitle: string;
-  categoryId: number;
-  onSuccess: () => void;
-  onCancel: () => void;
-}
-
-interface TicketFormData {
-  title: string;
-  description: string;
-  label: string;
-  expiry_date: Dayjs;
-  user_guid: string;
-}
 
 const AddNewTicket: React.FC<AddNewTicketProps> = ({
   visible,
@@ -115,7 +103,7 @@ const AddNewTicket: React.FC<AddNewTicketProps> = ({
   };
 
   // Disable past dates
-  const disabledDate = (current: Dayjs) => {
+  const disabledDate = (current: dayjs.Dayjs) => {
     return current && current < dayjs().startOf("day");
   };
 
