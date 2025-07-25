@@ -4,7 +4,14 @@ This is the frontend for the TODO project, built with React, TypeScript, and Vit
 
 ## Getting Started
 
-1. **Copy environment variables:**
+1. **Clone the repository:**
+
+   ```sh
+   git clone https://github.com/your-username/your-repo-name.git
+   cd your-repo-name
+   ```
+
+2. **Copy environment variables:**
 
    ```sh
    cp .env.example .env
@@ -12,13 +19,13 @@ This is the frontend for the TODO project, built with React, TypeScript, and Vit
 
    Edit `.env` if needed. Make sure the backend API URL/port matches your backend server.
 
-2. **Install dependencies:**
+3. **Install dependencies:**
 
    ```sh
    npm install
    ```
 
-3. **Start the development server:**
+4. **Start the development server:**
    ```sh
    npm run dev
    ```
