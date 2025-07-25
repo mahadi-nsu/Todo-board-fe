@@ -41,7 +41,14 @@ const Ticket: React.FC<TicketProps> = ({
         expiryStatus ? { borderBottom: `2px solid ${expiryColor}` } : undefined
       }
     >
-      <div style={{ position: "relative", minHeight: 32 }}>
+      <div style={{ display: "flex", alignItems: "center", minHeight: 32 }}>
+        <Title
+          level={5}
+          className="mb-2 text-gray-800 truncate"
+          style={{ marginBottom: 0, paddingRight: 60 }}
+        >
+          {ticket.title}
+        </Title>
         {expiryStatus && (
           <Tag
             color={expiryColor}
@@ -56,13 +63,6 @@ const Ticket: React.FC<TicketProps> = ({
             {expiryText}
           </Tag>
         )}
-        <Title
-          level={5}
-          className="mb-2 text-gray-800 truncate"
-          style={{ marginBottom: 0 }}
-        >
-          {ticket.title}
-        </Title>
       </div>
       <Text
         type="secondary"
