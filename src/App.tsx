@@ -6,7 +6,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import Layout from "./components/common/Layout";
 import AuthRedirect from "./components/common/AuthRedirect";
 import AppToaster from "./components/common/AppToaster";
-import { useEffect } from "react";
+import { useClearTicketDrafts } from "./hooks/useClearTicketDrafts";
 import NotFoundRedirect from "./components/common/NotFoundRedirect";
 import { Spin } from "antd";
 
@@ -17,19 +17,7 @@ const TodoBoard = lazy(() => import("./features/board"));
 
 function App() {
   // Clear ticket drafts on page load
-  useEffect(() => {
-    const clearTicketDrafts = () => {
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith("ticket-draft-")) {
-          localStorage.removeItem(key);
-        }
-      });
-    };
-    window.addEventListener("load", clearTicketDrafts);
-    return () => {
-      window.removeEventListener("load", clearTicketDrafts);
-    };
-  }, []);
+  useClearTicketDrafts();
 
   return (
     <>
