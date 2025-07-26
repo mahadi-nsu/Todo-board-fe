@@ -1,5 +1,5 @@
 import React from "react";
-import todoPng from "@/assets/to-do.png";
+import todoPng from "@/assets/to-do.webp";
 
 const AuthBanner: React.FC = () => (
   <img
