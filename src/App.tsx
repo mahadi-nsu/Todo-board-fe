@@ -8,6 +8,7 @@ import AuthRedirect from "./components/common/AuthRedirect";
 import AppToaster from "./components/common/AppToaster";
 import { useEffect } from "react";
 import NotFoundRedirect from "./components/common/NotFoundRedirect";
+import { Spin } from "antd";
 
 // Lazy loading
 const Login = lazy(() => import("./features/auth-login"));
@@ -15,6 +16,7 @@ const Register = lazy(() => import("./features/auth-register"));
 const TodoBoard = lazy(() => import("./features/board"));
 
 function App() {
+  // Clear ticket drafts on page load
   useEffect(() => {
     const clearTicketDrafts = () => {
       Object.keys(localStorage).forEach((key) => {
@@ -35,8 +37,8 @@ function App() {
         <AnimatePresence mode="wait">
           <Suspense
             fallback={
-              <div style={{ textAlign: "center", marginTop: 40 }}>
-                Loading...
+              <div style={{ textAlign: "center", marginTop: 340 }}>
+                <Spin size="large" spinning />
               </div>
             }
           >

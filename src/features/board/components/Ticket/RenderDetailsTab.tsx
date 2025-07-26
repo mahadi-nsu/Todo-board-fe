@@ -37,6 +37,7 @@ interface RenderDetailsTabProps {
   handleRemoveLabel: (labelId: number) => void;
   handleAddLabels: () => void;
   handleDescriptionChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  isShowingDraft?: boolean;
 }
 
 const RenderDetailsTab: React.FC<RenderDetailsTabProps> = ({
@@ -51,6 +52,7 @@ const RenderDetailsTab: React.FC<RenderDetailsTabProps> = ({
   handleRemoveLabel,
   handleAddLabels,
   handleDescriptionChange,
+  isShowingDraft = false,
 }) => {
   return (
     <div style={{ padding: "16px 0" }}>
@@ -66,7 +68,17 @@ const RenderDetailsTab: React.FC<RenderDetailsTabProps> = ({
 
           <Form.Item
             name="description"
-            label="Description"
+            label={
+              <Space>
+                <EditOutlined style={{ color: "#666" }} />
+                <span>Description</span>
+                {isShowingDraft && (
+                  <Tag color="warning" style={{ margin: 0 }}>
+                    📝 Draft Loaded
+                  </Tag>
+                )}
+              </Space>
+            }
             rules={[{ required: true, message: "Please enter a description" }]}
           >
             <TextArea
