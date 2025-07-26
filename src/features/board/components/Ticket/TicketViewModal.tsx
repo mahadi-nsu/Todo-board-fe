@@ -46,6 +46,7 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   const [form] = Form.useForm();
   const [selectedLabelIds, setSelectedLabelIds] = useState<number[]>([]);
   const [localTicket, setLocalTicket] = useState<TicketData | null>(null);
+  const [isShowingDraft, setIsShowingDraft] = useState(false);
   const {
     data: ticketData,
     isLoading: isLoadingHistory,
@@ -72,10 +73,12 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
   // Draft key for localStorage
   const draftKey = ticket ? `ticket-draft-${ticket.id}` : null;
 
-  // Load draft from localStorage when editing starts
+  // Check for draft when editing starts
   useEffect(() => {
     if (isEditing && draftKey && ticket) {
       const draft = localStorage.getItem(draftKey);
+      const hasDraft = !!draft;
+      setIsShowingDraft(hasDraft);
       form.setFieldsValue({
         title: ticket.title,
         description: draft ?? ticket.description,
@@ -133,6 +136,7 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
 
       await onUpdate(updatedTicket);
       setIsEditing(false);
+      setIsShowingDraft(false);
       toast.success("Ticket updated successfully!");
     } catch (error) {
       console.error("Form validation error:", error);
@@ -143,6 +147,7 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
 
   const handleCancel = () => {
     setIsEditing(false);
+    setIsShowingDraft(false);
     form.resetFields();
   };
 
@@ -423,6 +428,7 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
             handleRemoveLabel={handleRemoveLabel}
             handleAddLabels={handleAddLabels}
             handleDescriptionChange={handleDescriptionChange}
+            isShowingDraft={isShowingDraft}
           />
         </TabPane>
         <TabPane tab="History" key="history">

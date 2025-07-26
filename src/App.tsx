@@ -1,17 +1,22 @@
+import React, { Suspense, lazy } from "react";
 import "./App.css";
-import Login from "./features/auth-login";
-import Register from "./features/auth-register";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import TodoBoard from "./features/board";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import Layout from "./components/common/Layout";
 import AuthRedirect from "./components/common/AuthRedirect";
-import { Toaster } from "react-hot-toast";
+import AppToaster from "./components/common/AppToaster";
 import { useEffect } from "react";
 import NotFoundRedirect from "./components/common/NotFoundRedirect";
+import { Spin } from "antd";
+
+// Lazy loading
+const Login = lazy(() => import("./features/auth-login"));
+const Register = lazy(() => import("./features/auth-register"));
+const TodoBoard = lazy(() => import("./features/board"));
 
 function App() {
+  // Clear ticket drafts on page load
   useEffect(() => {
     const clearTicketDrafts = () => {
       Object.keys(localStorage).forEach((key) => {
@@ -25,63 +30,51 @@ function App() {
       window.removeEventListener("load", clearTicketDrafts);
     };
   }, []);
+
   return (
     <>
       <BrowserRouter>
         <AnimatePresence mode="wait">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <AuthRedirect>
-                  <Login />
-                </AuthRedirect>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <AuthRedirect>
-                  <Register />
-                </AuthRedirect>
-              }
-            />
-            <Route
-              path="/board"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <TodoBoard />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFoundRedirect />} />
-          </Routes>
+          <Suspense
+            fallback={
+              <div style={{ textAlign: "center", marginTop: 340 }}>
+                <Spin size="large" spinning />
+              </div>
+            }
+          >
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <AuthRedirect>
+                    <Login />
+                  </AuthRedirect>
+                }
+              />
+              <Route
+                path="/register"
+                element={
+                  <AuthRedirect>
+                    <Register />
+                  </AuthRedirect>
+                }
+              />
+              <Route
+                path="/board"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <TodoBoard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<NotFoundRedirect />} />
+            </Routes>
+          </Suspense>
         </AnimatePresence>
       </BrowserRouter>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: "#363636",
-            color: "#fff",
-          },
-          success: {
-            duration: 3000,
-            style: {
-              background: "#52c41a",
-            },
-          },
-          error: {
-            duration: 5000,
-            style: {
-              background: "#ff4d4f",
-            },
-          },
-        }}
-      />
+      <AppToaster />
     </>
   );
 }
