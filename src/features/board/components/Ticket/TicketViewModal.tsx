@@ -135,6 +135,12 @@ const TicketViewModal: React.FC<TicketViewModalProps> = ({
       };
 
       await onUpdate(updatedTicket);
+
+      // Clear the draft from localStorage when saving
+      if (draftKey) {
+        localStorage.removeItem(draftKey);
+      }
+
       setIsEditing(false);
       setIsShowingDraft(false);
       toast.success("Ticket updated successfully!");
