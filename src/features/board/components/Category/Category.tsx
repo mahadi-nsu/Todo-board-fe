@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { Card, Button, Badge, Dropdown } from "antd";
 import { MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import CategoryTitle from "./CategoryTitle";
@@ -49,11 +49,17 @@ const Category: React.FC<CategoryProps> = ({ label, onTicketUpdate }) => {
 
   // Filter tickets for this category
   const categoryId = parseInt(label.guid);
-  const tickets =
-    allTickets?.filter((ticket) => ticket.categoryId === categoryId) || [];
+  const tickets = useMemo(
+    () =>
+      allTickets?.filter((ticket) => ticket.categoryId === categoryId) || [],
+    [allTickets, categoryId]
+  );
 
   // Convert API tickets to TicketData format
-  const ticketData: TicketData[] = tickets.map(convertToTicketData);
+  const ticketData: TicketData[] = useMemo(
+    () => tickets.map(convertToTicketData),
+    [tickets]
+  );
 
   // Handlers
   const handleDeleteCategory = () => {

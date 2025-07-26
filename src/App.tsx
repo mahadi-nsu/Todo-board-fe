@@ -28,6 +28,7 @@ function App() {
       window.removeEventListener("load", clearTicketDrafts);
     };
   }, []);
+
   return (
     <>
       <BrowserRouter>
